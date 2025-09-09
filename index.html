@@ -1,0 +1,3054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sacred Sikkim | Himalayan Monastery Heritage</title>
+    
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gold: #D4AF37;
+            --primary-gold-dark: #B8941F;
+            --secondary-blue: #1E3A8A;
+            --accent-orange: #F59E0B;
+            --text-dark: #1F2937;
+            --text-light: #6B7280;
+            --bg-light: #B6B2A5;
+            --white: #FFFFFF;
+            --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-heavy: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --gradient-primary: linear-gradient(135deg, #D4AF37 0%, #F59E0B 100%);
+            --gradient-secondary: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            overflow-x: hidden;
+            background-color: var(--bg-light);
+        }
+
+        .playfair { font-family: 'Playfair Display', serif; }
+
+        /* Enhanced Scrollbar */
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 6px; }
+        ::-webkit-scrollbar-thumb { 
+            background: var(--gradient-primary); 
+            border-radius: 6px;
+            border: 2px solid #f1f1f1;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #f1f1ef;
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #000000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary-gold);
+            text-decoration: none;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-left: 1rem;
+        }
+
+        .nav-item a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 600;
+            padding: 0.55rem 1rem;
+            border-radius: 10px;
+            transition: all 0.25s ease;
+            position: relative;
+            background: #ffffff;
+            border: 1px solid #000000;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+        }
+
+        .nav-item a:hover,
+        .nav-item a.active {
+            color: var(--text-dark);
+            background: #eaeae6;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+        .mobile-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .mobile-toggle span {
+            width: 25px;
+            height: 3px;
+            background: var(--primary-gold);
+            margin: 3px 0;
+            transition: 0.3s;
+        }
+
+        /* Mega dropdown */
+        .mega-parent { position: relative; }
+        .mega-toggle { display: inline-flex; align-items: center; gap: 6px; }
+        .mega-toggle i { font-size: 0.8rem; }
+        .mega-menu {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 110%;
+            width: min(1100px, 92vw);
+            background: #fff;
+            border: 1px solid rgba(212, 175, 55, 0.18);
+            border-radius: 16px;
+            box-shadow: var(--shadow-heavy);
+            padding: 1.5rem;
+            display: none;
+            gap: 1.5rem;
+            z-index: 1001;
+        }
+        .mega-menu.open { display: grid; }
+        @media (min-width: 769px) { .mega-parent:hover .mega-menu { display: grid; } }
+        .mega-menu {
+            grid-template-columns: 1.2fr 1fr 1fr;
+        }
+        .mega-col h4 { color: var(--secondary-blue); margin-bottom: 0.8rem; font-size: 1rem; }
+        .mega-links { display: grid; gap: 0.4rem; }
+        .mega-links a { color: var(--text-dark); text-decoration: none; padding: 0.4rem 0.6rem; border-radius: 8px; }
+        .mega-links a:hover { background: rgba(212, 175, 55, 0.12); color: var(--primary-gold-dark); }
+        .mega-card {
+            background: var(--bg-light);
+            border: 1px solid rgba(212, 175, 55, 0.12);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+        .mega-card i { color: var(--primary-gold); }
+
+        /* AI Assistant and Search buttons */
+        .ai-assistant-toggle, .search-toggle { 
+            background: transparent; 
+            border: 0; 
+            color: var(--text-dark); 
+            cursor: pointer; 
+            padding: 0.4rem; 
+            border-radius: 8px; 
+            transition: all 0.3s ease;
+        }
+        .ai-assistant-toggle:hover, .search-toggle:hover { 
+            background: rgba(212, 175, 55, 0.12); 
+            color: var(--primary-gold-dark); 
+        }
+
+        /* AI Chat Box */
+        .ai-chat-overlay {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 400px;
+            height: 600px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px) scale(0.9);
+            transition: all 0.3s ease;
+        }
+
+        .ai-chat-overlay.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .ai-chat-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ai-chat-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ai-chat-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .ai-chat-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .ai-chat-messages {
+            height: 450px;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .ai-message {
+            background: #f8f9fa;
+            padding: 0.75rem 1rem;
+            border-radius: 15px 15px 15px 5px;
+            max-width: 80%;
+            align-self: flex-start;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .user-message {
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 15px 15px 5px 15px;
+            align-self: flex-end;
+            border: none;
+        }
+
+        .ai-chat-input {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .ai-chat-form {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .ai-chat-input-field {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 25px;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        .ai-chat-input-field:focus {
+            border-color: var(--primary-gold);
+        }
+
+        .ai-chat-send {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ai-chat-send:hover {
+            transform: scale(1.05);
+        }
+
+        .search-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            padding: 1rem;
+        }
+        .search-overlay.open { display: flex; }
+        .search-box {
+            width: min(800px, 92vw);
+            background: #fff;
+            border-radius: 14px;
+            padding: 1rem;
+            box-shadow: var(--shadow-heavy);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+        }
+        .search-input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border: 1px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+        }
+        .search-hints { margin-top: 0.8rem; color: var(--text-light); font-size: 0.9rem; }
+
+        /* Scroll progress */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            width: 0;
+            background: var(--gradient-primary);
+            z-index: 1200;
+            transition: width 0.1s linear;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(212, 175, 55, 0.8) 100%),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900"><defs><linearGradient id="mountain1" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:%23667eea;stop-opacity:0.8" /><stop offset="100%" style="stop-color:%234c51bf;stop-opacity:0.4" /></linearGradient><linearGradient id="mountain2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:%23f093fb;stop-opacity:0.6" /><stop offset="100%" style="stop-color:%23f5576c;stop-opacity:0.3" /></linearGradient></defs><polygon fill="url(%23mountain1)" points="0,500 240,200 480,350 720,150 960,300 1200,180 1440,250 1440,900 0,900"/><polygon fill="url(%23mountain2)" points="120,600 360,350 600,450 840,250 1080,400 1320,280 1440,350 1440,900 0,900"/></svg>') center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .hero-content {
+            text-align: center;
+            color: white;
+            max-width: 900px;
+            padding: 0 2rem;
+            z-index: 2;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 4.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #f7fafc 50%, #D4AF37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            animation: slideInUp 1s ease-out;
+        }
+
+        .hero-subtitle {
+            font-size: 1.4rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.95;
+            font-weight: 400;
+            animation: slideInUp 1s ease-out 0.2s both;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: slideInUp 1s ease-out 0.4s both;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-heavy);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 
+                var(--shadow-heavy),
+                0 0 20px rgba(212, 175, 55, 0.4),
+                0 0 40px rgba(212, 175, 55, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Content Sections */
+        .section {
+            padding: 6rem 2rem;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: #f5f5f5;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Stats Section */
+        .stats {
+            background: var(--white);
+            padding: 4rem 2rem;
+            margin-top: -100px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow-heavy);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        /* Features Grid */
+        .features {
+            background-image: url('bg2.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+                0 0 0 2px rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .feature-card:hover .feature-title {
+            color: #1a1a1a;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card:hover .feature-description {
+            color: #000000;
+        }
+
+        .feature-card:active {
+            transform: translateY(-4px) scale(1.01);
+            transition: all 0.1s ease;
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-primary);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #000000;
+            transition: color 0.3s ease;
+        }
+
+        .feature-description {
+            color: #333333;
+            line-height: 1.7;
+            transition: color 0.3s ease;
+        }
+
+        /* Map Section */
+        .map-section {
+            background: white;
+        }
+
+        .map-container {
+            height: 600px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-heavy);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .map-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .map-filter {
+            padding: 0.8rem 1.5rem;
+            background: white;
+            border: 2px solid var(--primary-gold);
+            border-radius: 50px;
+            color: var(--primary-gold);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .map-filter.active,
+        .map-filter:hover {
+            background: var(--primary-gold);
+            color: white;
+        }
+
+        /* Monasteries Section */
+        .monasteries {
+            background-image: url('bg1.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .monasteries::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6));
+            z-index: 1;
+        }
+
+        .monasteries .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .monastery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .monastery-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-light);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .monastery-card {
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .monastery-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s;
+            z-index: 1;
+        }
+
+        .monastery-card:hover::before {
+            left: 100%;
+        }
+
+        .monastery-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(212, 175, 55, 0.2);
+        }
+
+        .monastery-card:hover .monastery-image {
+            transform: scale(1.05);
+        }
+
+        .monastery-card:hover .monastery-title {
+            color: var(--primary-gold);
+        }
+
+        .monastery-card:hover .btn {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .monastery-image {
+            height: 250px;
+            background: linear-gradient(135deg, var(--primary-gold) 0%, var(--accent-orange) 100%);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.4s ease;
+        }
+
+        .monastery-image::before {
+            display: none;
+        }
+
+        .monastery-content {
+            padding: 2rem;
+        }
+
+        .monastery-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            transition: color 0.3s ease;
+        }
+
+        .monastery-description {
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .monastery-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .tag {
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--primary-gold-dark);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .monastery-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .monastery-actions .btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .monastery-actions .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .monastery-actions .btn:active {
+            transform: translateY(0);
+        }
+
+        .monastery-actions .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .monastery-actions .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-small {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+            border-radius: 8px;
+        }
+
+        /* Archive Section */
+        .archive {
+            background: white;
+        }
+
+        .archive-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .archive-category {
+            background: var(--bg-light);
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+
+        .archive-category:hover {
+            background: white;
+            box-shadow: var(--shadow-light);
+        }
+
+        .archive-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .archive-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .archive-count {
+            color: var(--text-light);
+        }
+
+        /* Tours Section */
+        .tours {
+            background: var(--bg-light);
+        }
+
+        .tour-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .tour-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-light);
+            transition: all 0.3s ease;
+        }
+
+        .tour-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .tour-preview {
+            height: 200px;
+            background: var(--gradient-secondary);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+
+        .tour-info {
+            padding: 2rem;
+        }
+
+        .tour-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .tour-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .tour-description {
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Research Section */
+        .research {
+            background: white;
+        }
+
+        .research-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .research-paper {
+            background: var(--bg-light);
+            padding: 2rem;
+            border-radius: 16px;
+            border-left: 4px solid var(--primary-gold);
+            transition: all 0.3s ease;
+        }
+
+        .research-paper:hover {
+            background: white;
+            box-shadow: var(--shadow-light);
+        }
+
+        .research-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .research-author {
+            color: var(--primary-gold-dark);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .research-date {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .research-abstract {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 4rem 2rem 2rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h3 {
+            color: var(--primary-gold);
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        .footer-section a {
+            color: #9CA3AF;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.8rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            text-align: center;
+            color: #9CA3AF;
+        }
+
+        /* Animations */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-menu { display: none; }
+            .mobile-toggle { display: flex; }
+            
+            .hero h1 { font-size: 2.8rem; }
+            .hero-subtitle { font-size: 1.1rem; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            
+            .section { padding: 4rem 1rem; }
+            .section-title { font-size: 2.2rem; }
+            
+            .stats-grid { grid-template-columns: repeat(2, 1fr); padding: 2rem; }
+            .features-grid { grid-template-columns: 1fr; }
+            .monastery-grid { grid-template-columns: 1fr; }
+            .tour-grid { grid-template-columns: 1fr; }
+            .research-grid { grid-template-columns: 1fr; }
+            
+            .map-controls { flex-direction: column; }
+            .map-container { height: 400px; }
+        }
+
+        @media (max-width: 480px) {
+            .nav-container { padding: 1rem; }
+            .hero h1 { font-size: 2.2rem; }
+            .btn { padding: 0.8rem 1.5rem; font-size: 0.9rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Enhanced Leaflet popup styles */
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+            border: 1px solid rgba(212, 175, 55, 0.2) !important;
+        }
+
+        .leaflet-popup-content {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        .leaflet-popup-tip {
+            background: white !important;
+            border: 1px solid rgba(212, 175, 55, 0.2) !important;
+        }
+
+        .custom-popup .leaflet-popup-content {
+            margin: 0;
+            padding: 0;
+            max-height: 400px;
+            overflow: hidden;
+        }
+
+        .popup-content {
+            padding: 0;
+            min-width: 350px;
+            max-width: 450px;
+            font-size: 0.9rem;
+        }
+
+        .popup-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .popup-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 2px;
+        }
+
+        .popup-content::-webkit-scrollbar-thumb {
+            background: var(--primary-gold);
+            border-radius: 2px;
+        }
+
+        .popup-content h4 {
+            border-bottom: 1px solid #E5E7EB;
+            padding-bottom: 0.3rem;
+        }
+
+        .popup-btn {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+        }
+
+        .popup-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+
+        .popup-btn i {
+            font-size: 0.8rem;
+        }
+
+        /* Monastery Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 90vw;
+            max-height: 90vh;
+            width: 800px;
+            overflow-y: auto;
+            position: relative;
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 2rem 2rem 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--text-dark);
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-image {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, var(--primary-gold) 0%, var(--accent-orange) 100%);
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-image::before {
+            content: '🏛️';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            opacity: 0.7;
+        }
+
+        .modal-description {
+            color: var(--text-dark);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        .modal-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-item {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-desc {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Enhanced monastery marker animations */
+        .custom-monastery-marker div {
+            animation: markerPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes markerPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            }
+        }
+
+        .custom-monastery-marker:hover div {
+            animation: none;
+            transform: scale(1.15) !important;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="scroll-progress" aria-hidden="true"></div>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#home" class="logo">
+                <i class="fas fa-mountain"></i>
+                <span>Sacred Sikkim</span>
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#home" class="active">Home</a></li>
+                <li class="nav-item"><a href="#monasteries">Monasteries</a></li>
+                <li class="nav-item"><a href="#map">Map</a></li>
+                <li class="nav-item"><a href="#archive">Archive</a></li>
+                <li class="nav-item"><a href="#research">Research</a></li>
+                <li class="nav-item"><a href="#about">About</a></li>
+                <li class="nav-item mega-parent">
+                    <a href="#features" class="mega-toggle"><i class="fas fa-compass"></i> Explore <i class="fas fa-chevron-down"></i></a>
+                    <div class="mega-menu" role="menu" aria-label="Explore menu">
+                        <div class="mega-col">
+                            <h4>Plan Your Journey</h4>
+                            <div class="mega-links">
+                                <a href="#map"><i class="fas fa-map-marked-alt"></i> Interactive Map</a>
+                                <a href="#monasteries"><i class="fas fa-landmark"></i> Featured Monasteries</a>
+                                <a href="#archive"><i class="fas fa-archive"></i> Digital Archive</a>
+                            </div>
+                        </div>
+                        <div class="mega-col">
+                            <h4>Quick Access</h4>
+                            <div class="mega-links">
+                                <a href="#research"><i class="fas fa-book"></i> Research</a>
+                                <a href="#about"><i class="fas fa-info-circle"></i> About</a>
+                                <a href="#tours"><i class="fas fa-calendar"></i> Festivals</a>
+                                <a href="#archive"><i class="fas fa-scroll"></i> Manuscripts</a>
+                            </div>
+                        </div>
+                        <div class="mega-col">
+                            <div class="mega-card">
+                                <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.6rem;">
+                                    <i class="fas fa-star"></i>
+                                    <strong>Highlights</strong>
+                                </div>
+                                <p style="color: var(--text-light);">Top monasteries, VR tours, and curated heritage routes to get you started.</p>
+                                <a href="#tours" class="btn btn-primary btn-small" style="margin-top:0.5rem;">Start Exploring</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <div class="nav-actions">
+                <button class="ai-assistant-toggle" aria-label="AI Assistant" title="AI Assistant"><i class="fas fa-robot"></i></button>
+                <button class="search-toggle" aria-label="Open search" title="Search"><i class="fas fa-search"></i></button>
+                <div class="mobile-toggle" aria-label="Open menu" role="button" tabindex="0">
+                <span></span>
+                <span></span>
+                <span></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="search-overlay" aria-modal="true" role="dialog" aria-hidden="true">
+        <div class="search-box">
+            <input class="search-input" type="search" placeholder="Search monasteries, tours, manuscripts..." aria-label="Search" />
+            <div class="search-hints"><i class="fas fa-lightbulb"></i> Try: "Nyingma monasteries near Gangtok"</div>
+        </div>
+    </div>
+
+    <!-- AI Chat Box -->
+    <div class="ai-chat-overlay" id="aiChatBox" aria-modal="true" role="dialog" aria-hidden="true">
+        <div class="ai-chat-header">
+            <div class="ai-chat-title">
+                <i class="fas fa-robot"></i>
+                AI Assistant
+            </div>
+            <button class="ai-chat-close" id="aiChatClose" aria-label="Close chat">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="ai-chat-messages" id="aiChatMessages">
+            <div class="ai-message">
+                <b>AI:</b> Namaste! I'm your AI travel assistant powered by Mistral AI for Sacred Sikkim. I can help you plan your monastery tour, suggest itineraries, recommend accommodations, and provide travel tips. 
+
+                🗺️ **Quick Start**: Try asking "plan tour", "3 days", "5 days", or "accommodation"
+                🏛️ **Monasteries**: Ask about "Rumtek", "Pemayangtse", or "festivals"
+                💰 **Budget**: Ask about "budget" or "transportation"
+
+                How can I help plan your Sikkim journey today?
+            </div>
+        </div>
+        <div class="ai-chat-input">
+            <form class="ai-chat-form" id="aiChatForm">
+                <input type="text" class="ai-chat-input-field" id="aiChatInput" placeholder="Plan my tour, accommodation, or ask about monasteries..." />
+                <button type="submit" class="ai-chat-send" aria-label="Send message">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-particles"></div>
+        <div class="hero-content">
+            <h1 class="playfair">Sacred Sikkim</h1>
+            <p class="hero-subtitle">Journey through the spiritual heritage of the Himalayas. Discover 250+ monasteries, ancient wisdom, and timeless architecture through immersive digital experiences.</p>
+            <div class="hero-buttons">
+                <a href="#map" class="btn btn-primary">
+                    <i class="fas fa-map-marked-alt"></i>
+                    Explore Interactive Map
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" data-count="257">0</div>
+                    <div class="stat-label">Monasteries Documented</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-count="1200">0</div>
+                    <div class="stat-label">Years of History</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" data-count="15000">0</div>
+                    <div class="stat-label">Artifacts Digitized</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title playfair">Discover Spiritual Heritage</h2>
+                <p class="section-subtitle">Explore Sikkim's monasteries through cutting-edge digital experiences that bring ancient wisdom into the modern world</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Interactive Heritage Map</h3>
+                    <p class="feature-description">Navigate through 250+ monasteries with our intelligent mapping system. Filter by Buddhist sect, historical period, accessibility, elevation, and cultural significance with real-time location data.</p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-vr-cardboard"></i>
+                    </div>
+                    <h3 class="feature-title">Immersive VR Experiences</h3>
+                    <p class="feature-description">Step inside sacred halls through 360° VR tours. Experience prayer ceremonies, examine ancient murals in detail, and feel the spiritual atmosphere of these sacred spaces from anywhere in the world.</p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-scroll"></i>
+                    </div>
+                    <h3 class="feature-title">Digital Manuscript Archive</h3>
+                    <p class="feature-description">Access rare Tibetan manuscripts, palm-leaf texts, and historical documents. Our high-resolution digitization preserves ancient knowledge and makes it searchable for researchers worldwide.</p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3 class="feature-title">Architectural Analysis</h3>
+                    <p class="feature-description">Detailed studies of monastic architecture, construction techniques, and cultural influences. Compare different styles across periods and understand the evolution of Himalayan sacred architecture.</p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3 class="feature-title">Sacred Art Gallery</h3>
+                    <p class="feature-description">Ultra-high-resolution photography of thangkas, murals, and sculptures with detailed iconographic interpretations. Discover the symbolic meanings behind every brushstroke and carving.</p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3 class="feature-title">Advanced Discovery Tools</h3>
+                    <p class="feature-description">AI-powered search across all content. Find monasteries by historical events, architectural features, resident teachers, festival calendars, or spiritual lineages with intelligent recommendations.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Map Section -->
+    <section class="section map-section" id="map">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title playfair">Interactive Monastery Map</h2>
+                <p class="section-subtitle">Discover monasteries across Sikkim with our interactive map featuring real-time information and tourist-friendly navigation</p>
+            </div>
+            
+            <div class="map-controls">
+                <button class="map-filter active" data-filter="all">
+                    <i class="fas fa-globe"></i> All Monasteries
+                </button>
+                <button class="map-filter" data-filter="gelug">
+                    <i class="fas fa-lotus"></i> Gelug Sect
+                </button>
+                <button class="map-filter" data-filter="kagyu">
+                    <i class="fas fa-mountain"></i> Kagyu Sect
+                </button>
+                <button class="map-filter" data-filter="nyingma">
+                    <i class="fas fa-fire"></i> Nyingma Sect
+                </button>
+                <button class="map-filter" data-filter="accessible">
+                    <i class="fas fa-car"></i> Road Accessible
+                </button>
+                <button class="map-filter" data-filter="ancient">
+                    <i class="fas fa-history"></i> Ancient (>500 years)
+                </button>
+            </div>
+            
+            <div class="map-container" id="monastery-map"></div>
+            
+            <div style="margin-top: 2rem; text-align: center;">
+                <p style="color: var(--text-light);">
+                    <i class="fas fa-info-circle"></i>
+                    Click on monastery markers for detailed information, photos, and directions. 
+                    Use filters to find monasteries that match your interests and travel plans.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Monasteries Section -->
+    <section class="section monasteries" id="monasteries">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title playfair">Featured Monasteries</h2>
+                <p class="section-subtitle">Explore the most significant monasteries of Sikkim, each with unique history, architecture, and spiritual significance</p>
+            </div>
+            
+            <div class="monastery-grid">
+                <div class="monastery-card fade-in">
+                    <div class="monastery-image" style="background-image: url('Rumtek_monastry.jpg'); background-size: cover; background-position: center;"></div>
+                    <div class="monastery-content">
+                        <h3 class="monastery-title">Rumtek Monastery</h3>
+                        <p class="monastery-description">The Dharma Chakra Centre, seat of the Gyalwa Karmapa and head of the Kagyu lineage. Built in the 1960s, it houses precious relics and maintains traditional Tibetan architecture with modern amenities.</p>
+                        <div class="monastery-tags">
+                            <span class="tag">Kagyu Sect</span>
+                            <span class="tag">Founded 1966</span>
+                            <span class="tag">Main Seat</span>
+                            <span class="tag">Road Accessible</span>
+                        </div>
+                        <div class="monastery-actions">
+                            <div class="btn-label">3D View</div>
+                            <a href="#" class="btn btn-primary btn-small">
+                                <i class="fas fa-vr-cardboard"></i> 3D View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="monastery-card fade-in">
+                    <div class="monastery-image" style="background-image: url('Pemayangtse_Monastry.jpg'); background-size: cover; background-position: center;"></div>
+                    <div class="monastery-content">
+                        <h3 class="monastery-title">Pemayangtse Monastery</h3>
+                        <p class="monastery-description">One of Sikkim's oldest and most important Nyingma monasteries, founded in 1705. Famous for its seven-tiered wooden sculpture depicting Guru Rinpoche's heavenly palace, Zangdok Palri.</p>
+                        <div class="monastery-tags">
+                            <span class="tag">Nyingma Sect</span>
+                            <span class="tag">Founded 1705</span>
+                            <span class="tag">UNESCO Heritage</span>
+                            <span class="tag">Ancient Art</span>
+                        </div>
+                        <div class="monastery-actions">
+                            <div class="btn-label">3D View</div>
+                            <a href="#" class="btn btn-primary btn-small">
+                                <i class="fas fa-vr-cardboard"></i> 3D View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="monastery-card fade-in">
+                    <div class="monastery-image" style="background-image: url('Enchey_monastry.jpg'); background-size: cover; background-position: center;"></div>
+                    <div class="monastery-content">
+                        <h3 class="monastery-title">Enchey Monastery</h3>
+                        <p class="monastery-description">Built in 1909 on a site blessed by Lama Drupthob Karpo, this Nyingma monastery is famous for the annual Cham dance during the Pang Lhabsol festival. Offers panoramic views of Gangtok valley.</p>
+                        <div class="monastery-tags">
+                            <span class="tag">Nyingma Sect</span>
+                            <span class="tag">Founded 1909</span>
+                            <span class="tag">Festival Hub</span>
+                            <span class="tag">City Views</span>
+                        </div>
+                        <div class="monastery-actions">
+                            <div class="btn-label">3D View</div>
+                            <a href="#" class="btn btn-primary btn-small">
+                                <i class="fas fa-vr-cardboard"></i> 3D View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="monastery-card fade-in">
+                    <div class="monastery-image" style="background-image: url('Tashiding_Monastry.jpg'); background-size: cover; background-position: center;"></div>
+                    <div class="monastery-content">
+                        <h3 class="monastery-title">Tashiding Monastery</h3>
+                        <p class="monastery-description">Sacred Nyingma monastery built in 1717, believed to be blessed by Guru Rinpoche. Famous for the Bhumchu ceremony during Losar, where holy water levels predict the coming year's fortune.</p>
+                        <div class="monastery-tags">
+                            <span class="tag">Nyingma Sect</span>
+                            <span class="tag">Founded 1717</span>
+                            <span class="tag">Sacred Site</span>
+                            <span class="tag">Pilgrimage</span>
+                        </div>
+                        <div class="monastery-actions">
+                            <div class="btn-label">3D View</div>
+                            <a href="#" class="btn btn-primary btn-small">
+                                <i class="fas fa-vr-cardboard"></i> 3D View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="monastery-card fade-in">
+                    <div class="monastery-image" style="background-image: url('Labrang_monastry.jpg'); background-size: cover; background-position: center;"></div>
+                    <div class="monastery-content">
+                        <h3 class="monastery-title">Labrang Monastery</h3>
+                        <p class="monastery-description">The royal monastery of Sikkim, built in 1814 by the third Chogyal. Houses the coronation throne and royal artifacts. Features exquisite murals depicting the life of Buddha and Sikkimese history.</p>
+                        <div class="monastery-tags">
+                            <span class="tag">Royal Heritage</span>
+                            <span class="tag">Founded 1814</span>
+                            <span class="tag">Palace Complex</span>
+                            <span class="tag">Historical Murals</span>
+                        </div>
+                        <div class="monastery-actions">
+                            <div class="btn-label">3D View</div>
+                            <a href="#" class="btn btn-primary btn-small">
+                                <i class="fas fa-vr-cardboard"></i> 3D View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="monastery-card fade-in">
+                    <div class="monastery-image" style="background-image: url('Phensang_monastery.jpg'); background-size: cover; background-position: center;"></div>
+                    <div class="monastery-content">
+                        <h3 class="monastery-title">Phensang Monastery</h3>
+                        <p class="monastery-description">Ancient Kagyu monastery dating to 1721, perched on a hilltop offering breathtaking views of the Himalayas. Known for its meditation caves and retreat centers where monks practice intensive meditation.</p>
+                        <div class="monastery-tags">
+                            <span class="tag">Kagyu Sect</span>
+                            <span class="tag">Founded 1721</span>
+                            <span class="tag">Meditation Center</span>
+                            <span class="tag">Mountain Views</span>
+                        </div>
+                        <div class="monastery-actions">
+                            <div class="btn-label">3D View</div>
+                            <a href="#" class="btn btn-primary btn-small">
+                                <i class="fas fa-vr-cardboard"></i> 3D View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 3rem;">
+                <a href="#" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    View All 257 Monasteries
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Digital Archive Section -->
+    <section class="section archive" id="archive">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title playfair">Digital Archive</h2>
+                <p class="section-subtitle">Preserving millennia of Buddhist wisdom through advanced digitization and scholarly research</p>
+            </div>
+            
+            <div class="archive-categories">
+                <div class="archive-category fade-in">
+                    <div class="archive-icon">
+                        <i class="fas fa-scroll"></i>
+                    </div>
+                    <h3 class="archive-title">Ancient Manuscripts</h3>
+                    <p class="archive-count">2,847 documents digitized</p>
+                    <p>Tibetan texts, Sanskrit palm-leaf manuscripts, and Sikkimese historical records dating back to the 8th century.</p>
+                </div>
+                
+                <div class="archive-category fade-in">
+                    <div class="archive-icon">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <h3 class="archive-title">Historical Photographs</h3>
+                    <p class="archive-count">5,692 images archived</p>
+                    <p>Rare photographs from British colonial period, royal ceremonies, and monastic life spanning 150+ years.</p>
+                </div>
+                
+                <div class="archive-category fade-in">
+                    <div class="archive-icon">
+                        <i class="fas fa-paint-brush"></i>
+                    </div>
+                    <h3 class="archive-title">Sacred Art Collection</h3>
+                    <p class="archive-count">3,429 artworks documented</p>
+                    <p>Thangkas, murals, sculptures, and ritual objects with detailed iconographic analysis and cultural context.</p>
+                </div>
+                
+                <div class="archive-category fade-in">
+                    <div class="archive-icon">
+                        <i class="fas fa-microphone"></i>
+                    </div>
+                    <h3 class="archive-title">Oral Traditions</h3>
+                    <p class="archive-count">1,283 recordings preserved</p>
+                    <p>Elder monks sharing stories, chants, ritual instructions, and historical accounts in multiple languages.</p>
+                </div>
+                
+                <div class="archive-category fade-in">
+                    <div class="archive-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3 class="archive-title">Research Papers</h3>
+                    <p class="archive-count">892 scholarly works</p>
+                    <p>Academic research on Buddhism, anthropology, architecture, and cultural studies by international scholars.</p>
+                </div>
+                
+                <div class="archive-category fade-in">
+                    <div class="archive-icon">
+                        <i class="fas fa-map"></i>
+                    </div>
+                    <h3 class="archive-title">Historical Maps</h3>
+                    <p class="archive-count">456 maps digitized</p>
+                    <p>Ancient trade routes, pilgrimage paths, territorial boundaries, and monastery foundation records.</p>
+                </div>
+            </div>
+            
+            <div style="background: var(--bg-light); padding: 3rem; border-radius: 20px; text-align: center;">
+                <h3 style="margin-bottom: 1rem; color: var(--text-dark);">Advanced Search & AI Tools</h3>
+                <p style="margin-bottom: 2rem; color: var(--text-light);">Our AI-powered search engine can translate between Tibetan, Sanskrit, Nepali, and English. Search by content, date, location, or even visual similarity.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="#" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Explore Archive
+                    </a>
+                    <a href="#" class="btn btn-secondary">
+                        <i class="fas fa-robot"></i> AI Assistant
+                    </a>
+                    <a href="#" class="btn btn-secondary">
+                        <i class="fas fa-language"></i> Translation Tool
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Research Section -->
+    <section class="section research" id="research" style="background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url('bg3.jpg') center/cover no-repeat;">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title playfair">Research & Publications</h2>
+                <p class="section-subtitle">Scholarly research and academic publications exploring the rich heritage of Sikkim's monastic traditions</p>
+            </div>
+            
+            <div class="research-grid">
+                <div class="research-paper fade-in">
+                    <h3 class="research-title">Architectural Evolution of Sikkimese Monasteries: A Comparative Study</h3>
+                    <div class="research-author">Dr. Tenzin Norbu, Sikkim University</div>
+                    <div class="research-date">Published: March 2024</div>
+                    <p class="research-abstract">This comprehensive study examines the architectural development of monastic structures in Sikkim from the 17th to 21st centuries, analyzing influences from Tibetan, Nepalese, and indigenous Lepcha traditions. The research includes detailed structural analysis of 47 major monasteries...</p>
+                    <a href="https://scholar.google.com/scholar?q=Architectural+Evolution+of+Sikkimese+Monasteries:+A+Comparative+Study" target="_blank" rel="noopener" class="btn btn-secondary btn-small" style="margin-top: 1rem;">
+                        <i class="fas fa-file-pdf"></i> Read Full Paper
+                    </a>
+                </div>
+                
+                <div class="research-paper fade-in">
+                    <h3 class="research-title">Digital Preservation of Tibetan Manuscripts: Challenges and Solutions</h3>
+                    <div class="research-author">Prof. Sarah Chen, Harvard University</div>
+                    <div class="research-date">Published: January 2024</div>
+                    <p class="research-abstract">An analysis of advanced digitization techniques for preserving ancient Tibetan manuscripts, including spectral imaging, 3D scanning, and AI-assisted text recognition. The study presents innovative methods for handling fragile documents while maintaining scholarly accessibility...</p>
+                    <a href="https://scholar.google.com/scholar?q=Digital+Preservation+of+Tibetan+Manuscripts:+Challenges+and+Solutions" target="_blank" rel="noopener" class="btn btn-secondary btn-small" style="margin-top: 1rem;">
+                        <i class="fas fa-external-link-alt"></i> View Research
+                    </a>
+                </div>
+                
+                <div class="research-paper fade-in">
+                    <h3 class="research-title">Ritual Symbolism in Nyingma Monastery Murals</h3>
+                    <div class="research-author">Dr. Karma Wangchuk, Tibet University</div>
+                    <div class="research-date">Published: November 2023</div>
+                    <p class="research-abstract">A detailed iconographic analysis of mural paintings in Nyingma monasteries across Sikkim, exploring the symbolic representations of Buddhist deities, cosmic diagrams, and ritual practices. The study includes high-resolution documentation of previously unstudied artworks...</p>
+                    <a href="https://scholar.google.com/scholar?q=Ritual+Symbolism+in+Nyingma+Monastery+Murals" target="_blank" rel="noopener" class="btn btn-secondary btn-small" style="margin-top: 1rem;">
+                        <i class="fas fa-images"></i> View Gallery
+                    </a>
+                </div>
+                
+                <div class="research-paper fade-in">
+                    <h3 class="research-title">Climate Change Impacts on High-Altitude Monasteries</h3>
+                    <div class="research-author">Dr. Pemba Sherpa, ICIMOD</div>
+                    <div class="research-date">Published: September 2023</div>
+                    <p class="research-abstract">This environmental study documents the effects of climate change on monastery structures and practices in high-altitude regions of Sikkim. The research provides recommendations for conservation strategies and adaptive practices for monastic communities...</p>
+                    <a href="https://scholar.google.com/scholar?q=Climate+Change+Impacts+on+High-Altitude+Monasteries" target="_blank" rel="noopener" class="btn btn-secondary btn-small" style="margin-top: 1rem;">
+                        <i class="fas fa-leaf"></i> Conservation Report
+                    </a>
+                </div>
+                
+                <div class="research-paper fade-in">
+                    <h3 class="research-title">Women in Sikkimese Buddhist Monasticism</h3>
+                    <div class="research-author">Dr. Diki Sherpa, Jawaharlal Nehru University</div>
+                    <div class="research-date">Published: June 2023</div>
+                    <p class="research-abstract">An anthropological study examining the role of women in Buddhist monasticism in Sikkim, including the establishment of nunneries, female religious leadership, and changing gender dynamics in contemporary monastic practice...</p>
+                    <a href="https://scholar.google.com/scholar?q=Women+in+Sikkimese+Buddhist+Monasticism" target="_blank" rel="noopener" class="btn btn-secondary btn-small" style="margin-top: 1rem;">
+                        <i class="fas fa-book-open"></i> Full Study
+                    </a>
+                </div>
+                
+                <div class="research-paper fade-in">
+                    <h3 class="research-title">Tourism and Monastic Heritage: Sustainable Development Models</h3>
+                    <div class="research-author">Prof. Michael Thompson, Oxford University</div>
+                    <div class="research-date">Published: April 2023</div>
+                    <p class="research-abstract">This policy research examines sustainable tourism models that balance economic development with heritage preservation in Sikkim's monastery regions. The study proposes community-based tourism frameworks that benefit local communities while protecting sacred sites...</p>
+                    <a href="https://scholar.google.com/scholar?q=Tourism+and+Monastic+Heritage:+Sustainable+Development+Models" target="_blank" rel="noopener" class="btn btn-secondary btn-small" style="margin-top: 1rem;">
+                        <i class="fas fa-chart-line"></i> Policy Brief
+                    </a>
+                </div>
+            </div>
+            
+            <div style="background: var(--bg-light); padding: 3rem; border-radius: 20px; text-align: center; margin-top: 3rem;">
+                <h3 style="margin-bottom: 1rem; color: var(--text-dark);">Contribute to Research</h3>
+                <p style="margin-bottom: 2rem; color: var(--text-light);">Join our global network of researchers, scholars, and practitioners. Submit your research, access our data, or collaborate on new projects.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="#" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Submit Research
+                    </a>
+                    <a href="#" class="btn btn-secondary">
+                        <i class="fas fa-database"></i> Access Data
+                    </a>
+                    <a href="#" class="btn btn-secondary">
+                        <i class="fas fa-users"></i> Join Network
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section" id="about" style="background: var(--bg-light);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title playfair">About Sacred Sikkim</h2>
+                <p class="section-subtitle">Preserving and sharing the spiritual heritage of the Himalayas through innovative digital technology</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 3rem; align-items: start;">
+                <div style="background: white; padding: 3rem; border-radius: 20px; box-shadow: var(--shadow-light);">
+                    <h3 style="color: var(--primary-gold); margin-bottom: 1.5rem; font-size: 1.4rem;">Our Mission</h3>
+                    <p style="color: var(--text-light); line-height: 1.8; margin-bottom: 2rem;">Sacred Sikkim is a collaborative digital heritage project dedicated to documenting, preserving, and sharing the rich monastic traditions of Sikkim. We work with local communities, international scholars, and technology partners to create immersive experiences that make ancient wisdom accessible to the modern world.</p>
+                    <p style="color: var(--text-light); line-height: 1.8;">Our goal is to ensure that future generations can explore, study, and appreciate the spiritual and cultural treasures of the Himalayas, regardless of geographical barriers or physical accessibility limitations.</p>
+                </div>
+                
+                <div style="background: white; padding: 3rem; border-radius: 20px; box-shadow: var(--shadow-light);">
+                    <h3 style="color: var(--primary-gold); margin-bottom: 1.5rem; font-size: 1.4rem;">Technology & Innovation</h3>
+                    <div style="display: grid; gap: 1rem; margin-bottom: 2rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-camera" style="color: var(--primary-gold); font-size: 1.2rem;"></i>
+                            <span style="color: var(--text-light);">Ultra-high resolution photography and 3D scanning</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-vr-cardboard" style="color: var(--primary-gold); font-size: 1.2rem;"></i>
+                            <span style="color: var(--text-light);">Virtual and Augmented Reality experiences</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-robot" style="color: var(--primary-gold); font-size: 1.2rem;"></i>
+                            <span style="color: var(--text-light);">AI-powered translation and content analysis</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i class="fas fa-cloud" style="color: var(--primary-gold); font-size: 1.2rem;"></i>
+                            <span style="color: var(--text-light);">Cloud-based preservation and global accessibility</span>
+                        </div>
+                    </div>
+                    <p style="color: var(--text-light); line-height: 1.8;">We leverage cutting-edge technology to create the most comprehensive digital archive of Himalayan Buddhist heritage, ensuring these treasures are preserved for future generations while remaining accessible to researchers, students, and spiritual seekers worldwide.</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 3rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+                    <div>
+                        <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary-gold); margin-bottom: 0.5rem;">15+</div>
+                        <div style="color: var(--text-light);">Partner Organizations</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary-gold); margin-bottom: 0.5rem;">50+</div>
+                        <div style="color: var(--text-light);">International Researchers</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary-gold); margin-bottom: 0.5rem;">200+</div>
+                        <div style="color: var(--text-light);">Community Contributors</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary-gold); margin-bottom: 0.5rem;">25+</div>
+                        <div style="color: var(--text-light);">Countries Reached</div>
+                    </div>
+                </div>
+                
+                <a href="#" class="btn btn-primary" style="margin-right: 1rem;">
+                    <i class="fas fa-envelope"></i> Contact Us
+                </a>
+                <a href="#" class="btn btn-secondary">
+                    <i class="fas fa-heart"></i> Support Project
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-mountain"></i> Sacred Sikkim</h3>
+                    <p style="color: #9CA3AF; line-height: 1.6; margin-bottom: 1.5rem;">Preserving and sharing the spiritual heritage of Sikkim's monasteries through innovative digital experiences and scholarly research.</p>
+                    <div style="display: flex; gap: 1rem;">
+                        <a href="#" style="color: var(--primary-gold); font-size: 1.2rem;"><i class="fab fa-facebook"></i></a>
+                        <a href="#" style="color: var(--primary-gold); font-size: 1.2rem;"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color: var(--primary-gold); font-size: 1.2rem;"><i class="fab fa-instagram"></i></a>
+                        <a href="#" style="color: var(--primary-gold); font-size: 1.2rem;"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Explore</h3>
+                    <a href="#monasteries"><i class="fas fa-building"></i> Monasteries</a>
+                    <a href="#map"><i class="fas fa-map"></i> Interactive Map</a>
+                    <a href="#archive"><i class="fas fa-archive"></i> Digital Archive</a>
+                    <a href="#research"><i class="fas fa-book"></i> Research</a>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Learn</h3>
+                    <a href="#"><i class="fas fa-history"></i> Buddhist History</a>
+                    <a href="#"><i class="fas fa-drafting-compass"></i> Architecture Guide</a>
+                    <a href="#"><i class="fas fa-palette"></i> Sacred Art</a>
+                    <a href="#"><i class="fas fa-graduation-cap"></i> Educational Resources</a>
+                    <a href="#"><i class="fas fa-language"></i> Tibetan Language</a>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Contribute</h3>
+                    <a href="#"><i class="fas fa-plus"></i> Submit Content</a>
+                    <a href="#"><i class="fas fa-camera"></i> Donate Photos</a>
+                    <a href="#"><i class="fas fa-hands-helping"></i> Volunteer</a>
+                    <a href="#"><i class="fas fa-donate"></i> Support Project</a>
+                    <a href="#"><i class="fas fa-users"></i> Join Community</a>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Connect</h3>
+                    <a href="#"><i class="fas fa-envelope"></i> Newsletter</a>
+                    <a href="#"><i class="fas fa-phone"></i> Contact Us</a>
+                    <a href="#"><i class="fas fa-info-circle"></i> About Team</a>
+                    <a href="#"><i class="fas fa-shield-alt"></i> Privacy Policy</a>
+                    <a href="#"><i class="fas fa-balance-scale"></i> Terms of Use</a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Sacred Sikkim Digital Heritage Project. Preserving spiritual culture for future generations.</p>
+                <p style="margin-top: 0.5rem; font-size: 0.9rem;">Built with ❤️ for the preservation of Himalayan Buddhist heritage.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Monastery Modal -->
+    <div class="modal-overlay" id="monasteryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="modal-close" id="closeModal">&times;</button>
+                <h2 class="modal-title" id="modalTitle">Monastery Details</h2>
+                <p class="modal-subtitle" id="modalSubtitle">Discover the rich heritage and spiritual significance</p>
+            </div>
+            <div class="modal-body">
+                <div class="modal-image" id="modalImage"></div>
+                <div class="modal-3d-view" id="modal3DView" style="display: none;">
+                    <iframe src="" width="100%" height="300" style="border:0; border-radius: 15px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+                <p class="modal-description" id="modalDescription">
+                    This monastery holds deep spiritual significance in the Himalayan region, serving as a center for Buddhist learning, meditation, and cultural preservation.
+                </p>
+                <div class="modal-features">
+                    <div class="feature-item">
+                        <div class="feature-icon">🏛️</div>
+                        <div class="feature-title">Architecture</div>
+                        <div class="feature-desc">Traditional Tibetan design with modern amenities</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📿</div>
+                        <div class="feature-title">Spiritual Practice</div>
+                        <div class="feature-desc">Daily prayers, meditation, and religious ceremonies</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🎭</div>
+                        <div class="feature-title">Cultural Events</div>
+                        <div class="feature-desc">Annual festivals and traditional dance performances</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📚</div>
+                        <div class="feature-title">Education</div>
+                        <div class="feature-desc">Buddhist philosophy and traditional arts training</div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <a href="#" class="btn btn-primary" id="modalDirectionsBtn">
+                        <i class="fas fa-map-marker-alt"></i> Get Directions
+                    </a>
+                    <a href="#" class="btn btn-secondary">
+                        <i class="fas fa-calendar"></i> Plan Visit
+                    </a>
+                    <a href="#" class="btn btn-outline">
+                        <i class="fas fa-share"></i> Share
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        // Monastery data for the map with detailed historic and geographic information
+        const monasteryData = [
+            {
+                name: "Rumtek Monastery",
+                lat: 27.3389,
+                lng: 88.5500,
+                sect: "kagyu",
+                founded: 1966,
+                accessible: true,
+                description: "The Dharma Chakra Centre, seat of the Gyalwa Karmapa",
+                significance: "Main seat of Kagyu lineage",
+                elevation: "1550m",
+                history: "Built by the 16th Karmapa Rangjung Rigpe Dorje in 1966 as the main seat of the Karma Kagyu lineage outside Tibet. The monastery was constructed to replicate the original Tsurphu Monastery in Tibet. It houses precious relics including the Black Crown of the Karmapa and golden stupas containing the relics of previous Karmapas.",
+                geography: "Located 24km from Gangtok on a hilltop overlooking the Rangeet River valley. The monastery sits on a south-facing slope of the Himalayan foothills, surrounded by dense forests of oak, rhododendron, and bamboo. The location was chosen for its serene environment and strategic position controlling the ancient trade route between Sikkim and Tibet.",
+                architecture: "Traditional Tibetan architecture with modern reinforcements. The main temple features intricate woodwork, golden roofs, and elaborate murals depicting the life of Buddha and Kagyu lineage masters. The complex includes the main shrine hall, monks' quarters, library, and meditation halls.",
+                culturalInfo: "Houses over 300 monks and serves as a major center for Buddhist learning. The monastery hosts the annual Kagyu Monlam Chenmo prayer festival and is famous for its sacred dance performances during Tibetan New Year.",
+                nearbyLandmarks: "Martam village, Rangeet River, Ranipool town",
+                bestTime: "October to May for clear mountain views",
+                specialEvents: "Tibetan New Year (Feb/Mar), Kagyu Monlam (Dec/Jan)"
+            },
+            {
+                name: "Pemayangtse Monastery",
+                lat: 27.2951,
+                lng: 88.2183,
+                sect: "nyingma",
+                founded: 1705,
+                accessible: true,
+                description: "One of Sikkim's oldest and most important Nyingma monasteries",
+                significance: "UNESCO World Heritage candidate",
+                elevation: "2085m",
+                history: "Founded in 1705 by Lama Lhatsun Chempo, one of the three learned lamas who came from Tibet to establish Buddhism in Sikkim. The monastery was built under the patronage of Chogyal Chakdor Namgyal. It served as the head monastery of the Nyingma sect in Sikkim and played a crucial role in the political and religious history of the kingdom.",
+                geography: "Perched on a hilltop near Pelling in West Sikkim, offering panoramic views of the Kanchenjunga range and surrounding valleys. The monastery overlooks the Rabdentse ruins, the former capital of Sikkim. Located at the confluence of several mountain streams, the area is known for its rich biodiversity and medicinal plants.",
+                architecture: "Three-story traditional Tibetan structure with the famous seven-tiered wooden sculpture 'Zangdok Palri' (Guru Rinpoche's Celestial Palace) on the top floor. The monastery features ancient murals, hand-carved wooden artifacts, and rare manuscripts. The main prayer hall houses statues of Guru Rinpoche, Buddha, and other Buddhist deities.",
+                culturalInfo: "Literally means 'Perfect Sublime Lotus' - only pure Tibetan monks of unmixed lineage were allowed to become monks here. Houses rare Tibetan texts and maintains strict monastic traditions.",
+                nearbyLandmarks: "Rabdentse Palace ruins, Sangachoeling Monastery, Khecheopalri Lake",
+                bestTime: "March to May and September to November",
+                specialEvents: "Cham dance during Pang Lhabsol festival (August/September)"
+            },
+            {
+                name: "Enchey Monastery",
+                lat: 27.3314,
+                lng: 88.6138,
+                sect: "nyingma",
+                founded: 1909,
+                accessible: true,
+                description: "Famous for annual Cham dance during Pang Lhabsol festival",
+                significance: "Festival hub with city views",
+                elevation: "1840m",
+                history: "Built in 1909 by Lama Drupthob Karpo on a site blessed by him with tantric powers. The location was chosen after the lama performed flying meditation from Maenam Hill to this spot. The monastery replaced an earlier hermitage and became a center for tantric practices and ritual ceremonies.",
+                geography: "Located on a ridge above Gangtok city, offering spectacular views of the Kanchenjunga range and Gangtok valley. The monastery sits amidst a grove of pine and rhododendron trees, creating a peaceful environment despite its proximity to the capital. The location provides natural protection from strong winds and receives optimal sunlight throughout the day.",
+                architecture: "Single-story traditional structure with modern additions. The prayer hall features beautiful frescoes depicting Buddhist deities and the monastery's history. The compound includes monks' quarters, a library, and meditation rooms. The main attraction is the large prayer wheel and the collection of ancient masks used in ritual dances.",
+                culturalInfo: "Famous for the colorful Cham dance performed during the Pang Lhabsol festival, celebrating the guardian deity of Sikkim. The monastery maintains a rich tradition of sacred mask dances and serves as a major cultural center for Gangtok residents.",
+                nearbyLandmarks: "Gangtok city center, Ridge Park, Lukshyama Building",
+                bestTime: "Year-round, but August-September for Pang Lhabsol festival",
+                specialEvents: "Pang Lhabsol festival (August/September), Losar (February/March)"
+            },
+            {
+                name: "Tashiding Monastery",
+                lat: 27.3167,
+                lng: 88.2667,
+                sect: "nyingma",
+                founded: 1717,
+                accessible: false,
+                description: "Sacred Nyingma monastery blessed by Guru Rinpoche",
+                significance: "Major pilgrimage site",
+                elevation: "1465m",
+                history: "Founded in 1717 by Ngadak Sempa Chempo Phunshok Rigzing, built on a conical hilltop believed to be blessed by Guru Rinpoche in the 8th century. Legend says Guru Rinpoche shot an arrow from Bumchu rock, and where it landed became the monastery site. The monastery holds the sacred Bumchu (holy water) ceremony, predicting the year's fortune based on water levels in a sacred vase.",
+                geography: "Built on a heart-shaped hill at the confluence of Ratong and Rangeet rivers, creating a naturally sacred geography in Buddhist cosmology. The location represents the center of Sikkim and is considered the most sacred spot in the kingdom. The hill is covered with prayer flags and offers views of major Himalayan peaks.",
+                architecture: "Traditional Tibetan monastery with golden roofs visible from far distances. The main shrine houses the sacred Bumchu vase and statues of Guru Rinpoche. The monastery features ancient frescoes, prayer wheels, and a collection of rare Buddhist texts. The circumambulation path around the monastery is lined with prayer wheels and chortens.",
+                culturalInfo: "Considered the holiest monastery in Sikkim, where a single visit is believed to wash away sins of a lifetime. The annual Bumchu festival during Losar is attended by thousands of pilgrims who come to receive blessed water and make predictions for the coming year.",
+                nearbyLandmarks: "Ratong River, Rangeet River confluence, Legship town",
+                bestTime: "October to March, avoid monsoon season",
+                specialEvents: "Bumchu festival during Losar (February/March), major pilgrimage time"
+            },
+            {
+                name: "Labrang Monastery",
+                lat: 27.3389,
+                lng: 88.6083,
+                sect: "royal",
+                founded: 1814,
+                accessible: true,
+                description: "The royal monastery of Sikkim with coronation throne",
+                significance: "Royal heritage site",
+                elevation: "1677m",
+                history: "Built in 1814 by the third Chogyal Tsudphud Namgyal as the royal chapel and coronation site for Sikkimese kings. The monastery served dual purposes as a place of worship and the seat of political power. It houses the original throne used for royal coronations and contains artifacts from the Namgyal dynasty that ruled Sikkim for over 300 years.",
+                geography: "Located within the palace complex in Gangtok, strategically positioned to oversee the capital and surrounding valleys. The site was chosen for its commanding view and spiritual significance, with clear sightlines to major mountain peaks considered sacred in Sikkimese tradition. The location represents the intersection of temporal and spiritual power.",
+                architecture: "Unique fusion of Tibetan monastery architecture with royal palace elements. Features ornate wooden carvings, golden decorations, and royal insignia alongside traditional Buddhist elements. The main hall contains the coronation throne, royal portraits, and religious artifacts. The building showcases the sophisticated craftsmanship of 19th-century Sikkimese artisans.",
+                culturalInfo: "Served as the spiritual heart of the Sikkimese monarchy and continues to play important ceremonial roles. Houses historical documents, royal artifacts, and maintains traditions linking Buddhism with governance. The monastery represents the unique theocratic nature of historical Sikkim.",
+                nearbyLandmarks: "Tsuklakhang Palace, Gangtok city center, Ridge area",
+                bestTime: "Year-round access, best during clear weather months",
+                specialEvents: "Royal commemorations, state ceremonies, Buddhist festivals"
+            },
+            {
+                name: "Phensang Monastery",
+                lat: 27.3700,
+                lng: 88.5900,
+                sect: "kagyu",
+                founded: 1721,
+                accessible: false,
+                description: "Ancient Kagyu monastery with meditation caves",
+                significance: "Meditation retreat center",
+                elevation: "2200m",
+                history: "Established in 1721 by Lama Jigme Pawo, this monastery was built around natural caves used for meditation by earlier hermits. The site has been a meditation retreat for over 400 years, with caves showing evidence of long-term hermitage practices. The monastery maintains the tradition of three-year, three-month, three-day meditation retreats.",
+                geography: "Perched on a steep mountainside with numerous natural caves carved into the cliff face. The location offers complete isolation necessary for intensive meditation practices, surrounded by dense forests of rhododendron, fir, and juniper. The area is rich in medicinal plants traditionally used by meditating monks. Natural springs provide pure water essential for long retreats.",
+                architecture: "Built to integrate with natural rock formations and caves. The main building is modest, with the focus on the meditation caves carved into the mountainside. Each cave is designed for single-person retreats with minimal amenities. The monastery features simple prayer halls and quarters for retreat masters.",
+                culturalInfo: "Maintains the strict tradition of Kagyu meditation practices including the famous three-year retreats. Monks here are known for their advanced meditation skills and the monastery serves as a training ground for meditation masters throughout the Himalayan region.",
+                nearbyLandmarks: "Meditation caves, mountain springs, ancient hermitage sites",
+                bestTime: "May to October for trekking access",
+                specialEvents: "Completion ceremonies for three-year retreats, meditation workshops"
+            },
+            {
+                name: "Ralang Monastery",
+                lat: 27.2833,
+                lng: 88.5167,
+                sect: "kagyu",
+                founded: 1768,
+                accessible: true,
+                description: "Important Kagyu monastery with beautiful architecture",
+                significance: "Architectural significance",
+                elevation: "1800m",
+                history: "Founded in 1768 during the reign of Chogyal Tenzing Namgyal by the 4th Karmapa's representative. Built to strengthen the Kagyu presence in southern Sikkim and serve the local community. The monastery played a crucial role in spreading Kagyu teachings among the Lepcha and Bhutia communities in the region.",
+                geography: "Situated on a terraced hillside overlooking the Rangeet River valley with commanding views of the southern Himalayan ranges. The location was chosen for its natural amphitheater setting and proximity to local settlements. The monastery is surrounded by terraced fields and traditional villages, representing the integration of monastic life with agricultural communities.",
+                architecture: "Notable for its unique architectural features combining Tibetan and Sikkimese styles. The monastery features beautiful wood carvings, painted pillars, and traditional Tibetan roof architecture. The prayer hall contains ancient murals depicting the Kagyu lineage and local protective deities.",
+                culturalInfo: "Known for its annual Pang Lhabsol celebrations and maintains strong connections with local communities. The monastery serves both spiritual and educational functions for nearby villages.",
+                nearbyLandmarks: "Ravangla town, Buddha Park, Rangeet River valley",
+                bestTime: "March to May and September to November",
+                specialEvents: "Pang Lhabsol festival, Kagyu teachings and empowerments"
+            },
+            {
+                name: "Dubdi Monastery",
+                lat: 27.2889,
+                lng: 88.2111,
+                sect: "nyingma",
+                founded: 1701,
+                accessible: false,
+                description: "First monastery built in Sikkim",
+                significance: "Historical importance",
+                elevation: "2100m",
+                history: "Built in 1701, Dubdi holds the distinction of being the first monastery constructed in Sikkim. Founded by Lhatsun Chempo, one of the three lamas who established Buddhism in Sikkim, it marks the beginning of organized Buddhist monasticism in the kingdom. The monastery was built following the coronation of the first Chogyal and represents the foundation of Sikkim's Buddhist identity.",
+                geography: "Located on a forested hilltop near Yuksom, the first capital of Sikkim. The site offers panoramic views of the Kanchenjunga range and is surrounded by ancient forests containing rare Himalayan flora. The monastery sits at the beginning of the historic trade route to Tibet and commands strategic views of approaching valleys.",
+                architecture: "Simple, traditional structure reflecting early Sikkimese monastic architecture. Built with local stone and timber, the monastery showcases ancient construction techniques. The prayer hall contains original 18th-century murals and statues installed by the founding lama.",
+                culturalInfo: "Known as the 'Retreat Monastery', it maintains traditions of intensive meditation practice. The monastery holds special significance as the starting point of Sikkim's Buddhist heritage and is visited by pilgrims beginning the Kanchenjunga trek.",
+                nearbyLandmarks: "Yuksom village, Norbugang Park, Tashiding Monastery",
+                bestTime: "March to May and September to November",
+                specialEvents: "Foundation day celebrations, meditation retreats"
+            },
+            {
+                name: "Sang Monastery",
+                lat: 27.4833,
+                lng: 88.5833,
+                sect: "nyingma",
+                founded: 1697,
+                accessible: false,
+                description: "Remote monastery in North Sikkim",
+                significance: "High altitude monastery",
+                elevation: "3800m",
+                history: "Established in 1697 as one of the earliest monasteries in North Sikkim, built by Tibetan lamas who fled political turmoil in Tibet. The monastery served as a refuge for Buddhist scholars and maintained connections with major Tibetan monasteries. Despite its remote location, it played a crucial role in preserving Tibetan Buddhist texts and practices.",
+                geography: "Located in the high-altitude region of North Sikkim, surrounded by glacial valleys and towering peaks. The monastery sits in a valley protected from harsh winds, with natural hot springs nearby. The area is characterized by alpine meadows, rare high-altitude plants, and is home to snow leopards, blue sheep, and other Himalayan wildlife.",
+                architecture: "Built to withstand extreme weather conditions with thick stone walls and low-profile design. The monastery features traditional Tibetan high-altitude construction techniques with minimal windows and heavy timber reinforcement. Interior decorations are simpler but include ancient texts and artifacts brought from Tibet.",
+                culturalInfo: "Maintains the strictest monastic traditions due to its isolation. The monastery is known for preserving ancient Nyingma practices and serves as a repository for rare Buddhist texts. Access requires special permits and is limited to certain times of the year.",
+                nearbyLandmarks: "Gurudongmar Lake, Yumthang Valley, Tibetan plateau",
+                bestTime: "June to September (monsoon permitting)",
+                specialEvents: "Annual blessing ceremonies, limited access religious festivals"
+            },
+            {
+                name: "Tsuklakhang Monastery",
+                lat: 27.3333,
+                lng: 88.6167,
+                sect: "gelug",
+                founded: 1894,
+                accessible: true,
+                description: "Royal chapel within Tsuklakhang complex",
+                significance: "Royal chapel",
+                elevation: "1650m",
+                history: "Built in 1894 as part of the royal palace complex during the reign of Chogyal Thutob Namgyal. The monastery served as the royal family's private chapel and housed important state ceremonies. It represents the synthesis of Tibetan Buddhism with Sikkimese royal traditions and maintained connections with major Gelug monasteries in Tibet.",
+                geography: "Located within the Tsuklakhang Palace complex in the heart of Gangtok, providing easy access for royal ceremonies and state functions. The site was chosen for its central location and spiritual significance within the capital. The monastery overlooks the main city area and has clear views of sacred mountains.",
+                architecture: "Designed as a royal chapel with ornate decorations befitting its status. Features elaborate golden work, precious stone decorations, and royal insignia alongside traditional Buddhist elements. The prayer hall contains royal portraits, state artifacts, and religious objects used in royal ceremonies.",
+                culturalInfo: "Served dual purposes as a place of worship and venue for state ceremonies. The monastery maintains Gelug traditions while incorporating elements specific to Sikkimese royal culture. It houses historical documents related to Sikkim's political and religious history.",
+                nearbyLandmarks: "Royal Palace, Gangtok city center, government buildings",
+                bestTime: "Year-round access during visiting hours",
+                specialEvents: "State ceremonies, royal commemorations, Buddhist festivals"
+            }
+        ];
+
+        // Expose globally for lookups elsewhere
+        window.monasteryData = monasteryData;
+
+        let map, monasteryMarkers = [];
+        let currentFilter = 'all';
+
+        // Initialize map
+        function initMap() {
+            map = L.map('monastery-map').setView([27.3389, 88.4500], 10);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add terrain overlay for better visualization
+            const terrainOverlay = L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg', {
+                attribution: 'Map tiles by Stamen Design, under CC BY 3.0',
+                opacity: 0.3
+            }).addTo(map);
+
+            loadMonasteries();
+        }
+
+        // Create custom monastery icons
+        function getMonasteryIcon(monastery) {
+            let iconColor = '#D4AF37'; // Default gold
+            let iconSymbol = '🏛️';
+            
+            switch(monastery.sect) {
+                case 'nyingma':
+                    iconColor = '#E53E3E';
+                    iconSymbol = '🔥';
+                    break;
+                case 'kagyu':
+                    iconColor = '#3182CE';
+                    iconSymbol = '⛰️';
+                    break;
+                case 'gelug':
+                    iconColor = '#F59E0B';
+                    iconSymbol = '☀️';
+                    break;
+                case 'royal':
+                    iconColor = '#9F7AEA';
+                    iconSymbol = '👑';
+                    break;
+            }
+
+            return L.divIcon({
+                className: 'custom-monastery-marker',
+                html: `
+                    <div style="
+                        background: ${iconColor}; 
+                        color: white; 
+                        width: 35px; 
+                        height: 35px; 
+                        border-radius: 50%; 
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: center;
+                        font-size: 16px;
+                        border: 3px solid white;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">
+                        ${iconSymbol}
+                    </div>
+                `,
+                iconSize: [35, 35],
+                iconAnchor: [17.5, 17.5],
+                popupAnchor: [0, -35]
+            });
+        }
+
+        // Load monasteries on map
+        function loadMonasteries() {
+            // Clear existing markers
+            monasteryMarkers.forEach(marker => map.removeLayer(marker));
+            monasteryMarkers = [];
+
+            monasteryData.forEach(monastery => {
+                if (currentFilter === 'all' || 
+                    (currentFilter === 'accessible' && monastery.accessible) ||
+                    (currentFilter === 'ancient' && (2025 - monastery.founded) > 500) ||
+                    currentFilter === monastery.sect) {
+                    
+                    const marker = L.marker([monastery.lat, monastery.lng], {
+                        icon: getMonasteryIcon(monastery)
+                    });
+
+                    // Create detailed popup content with historic and geographic information
+                    const popupContent = `
+                        <div class="popup-content" style="max-width: 400px;">
+                            <div style="background: var(--gradient-primary); color: white; padding: 1rem; margin: -1rem -1rem 1rem -1rem; border-radius: 8px 8px 0 0;">
+                                <h3 style="margin: 0; font-size: 1.3rem; font-weight: 700;">${monastery.name}</h3>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; opacity: 0.9;">
+                                    <span style="font-size: 0.9rem;">Founded ${monastery.founded}</span>
+                                    <span style="font-size: 0.9rem;">📍 ${monastery.elevation}</span>
+                                </div>
+                            </div>
+                            
+                            <div style="max-height: 300px; overflow-y: auto; padding-right: 5px;">
+                                <!-- Basic Info -->
+                                <div style="background: #F9FAFB; padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem;">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.85rem;">
+                                        <div><strong>Sect:</strong> ${monastery.sect.charAt(0).toUpperCase() + monastery.sect.slice(1)}</div>
+                                        <div><strong>Access:</strong> ${monastery.accessible ? '🚗 Road accessible' : '🥾 Trekking required'}</div>
+                                    </div>
+                                    <div style="margin-top: 0.5rem; font-size: 0.85rem;">
+                                        <strong>Significance:</strong> ${monastery.significance}
+                                    </div>
+                                </div>
+
+                                <!-- Historical Information -->
+                                <div style="margin-bottom: 1rem;">
+                                    <h4 style="color: var(--primary-gold-dark); margin: 0 0 0.5rem 0; font-size: 1rem; display: flex; align-items: center; gap: 0.3rem;">
+                                        <i class="fas fa-scroll" style="font-size: 0.9rem;"></i> Historical Background
+                                    </h4>
+                                    <p style="margin: 0; font-size: 0.85rem; line-height: 1.5; color: #374151;">
+                                        ${monastery.history}
+                                    </p>
+                                </div>
+
+                                <!-- Geographic Information -->
+                                <div style="margin-bottom: 1rem;">
+                                    <h4 style="color: var(--primary-gold-dark); margin: 0 0 0.5rem 0; font-size: 1rem; display: flex; align-items: center; gap: 0.3rem;">
+                                        <i class="fas fa-mountain" style="font-size: 0.9rem;"></i> Geographic Setting
+                                    </h4>
+                                    <p style="margin: 0; font-size: 0.85rem; line-height: 1.5; color: #374151;">
+                                        ${monastery.geography}
+                                    </p>
+                                </div>
+
+                                <!-- Architecture -->
+                                <div style="margin-bottom: 1rem;">
+                                    <h4 style="color: var(--primary-gold-dark); margin: 0 0 0.5rem 0; font-size: 1rem; display: flex; align-items: center; gap: 0.3rem;">
+                                        <i class="fas fa-building" style="font-size: 0.9rem;"></i> Architecture & Design
+                                    </h4>
+                                    <p style="margin: 0; font-size: 0.85rem; line-height: 1.5; color: #374151;">
+                                        ${monastery.architecture}
+                                    </p>
+                                </div>
+
+                                <!-- Cultural Information -->
+                                <div style="margin-bottom: 1rem;">
+                                    <h4 style="color: var(--primary-gold-dark); margin: 0 0 0.5rem 0; font-size: 1rem; display: flex; align-items: center; gap: 0.3rem;">
+                                        <i class="fas fa-users" style="font-size: 0.9rem;"></i> Cultural Significance
+                                    </h4>
+                                    <p style="margin: 0; font-size: 0.85rem; line-height: 1.5; color: #374151;">
+                                        ${monastery.culturalInfo}
+                                    </p>
+                                </div>
+
+                                <!-- Visit Information -->
+                                <div style="background: #EFF6FF; padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem;">
+                                    <h4 style="color: var(--secondary-blue); margin: 0 0 0.5rem 0; font-size: 0.95rem; display: flex; align-items: center; gap: 0.3rem;">
+                                        <i class="fas fa-info-circle" style="font-size: 0.9rem;"></i> Visitor Information
+                                    </h4>
+                                    <div style="font-size: 0.8rem; color: #1E40AF;">
+                                        <div style="margin-bottom: 0.3rem;"><strong>Best Time to Visit:</strong> ${monastery.bestTime}</div>
+                                        <div style="margin-bottom: 0.3rem;"><strong>Special Events:</strong> ${monastery.specialEvents}</div>
+                                        <div><strong>Nearby Landmarks:</strong> ${monastery.nearbyLandmarks}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+                                <button class="popup-btn" onclick="viewMonasteryDetails('${monastery.name}')" style="flex: 1; min-width: 100px;">
+                                    <i class="fas fa-eye"></i> Full Details
+                                </button>
+                                <button class="popup-btn" onclick="getDirections(${monastery.lat}, ${monastery.lng})" style="flex: 1; min-width: 100px;">
+                                    <i class="fas fa-directions"></i> Directions
+                                </button>
+                            </div>
+                            
+                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                                <button class="popup-btn" onclick="viewPhotoGallery('${monastery.name}')" style="flex: 1; font-size: 0.8rem; padding: 0.4rem 0.8rem; background: var(--gradient-secondary);">
+                                    <i class="fas fa-camera"></i> Photo Gallery
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    marker.bindPopup(popupContent, {
+                        maxWidth: 450,
+                        maxHeight: 400,
+                        className: 'custom-popup'
+                    });
+
+                    marker.addTo(map);
+                    monasteryMarkers.push(marker);
+                }
+            });
+        }
+
+        // Map filter functionality
+        document.querySelectorAll('.map-filter').forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active state
+                document.querySelectorAll('.map-filter').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Update filter and reload monasteries
+                currentFilter = this.dataset.filter;
+                loadMonasteries();
+            });
+        });
+
+        // Enhanced popup actions with detailed information
+        function viewMonasteryDetails(name) {
+            const monastery = monasteryData.find(m => m.name === name);
+            if (monastery) {
+                // Create a detailed modal or new page view
+                alert(`Opening comprehensive profile for ${name}\n\nThis would show:\n- Complete historical timeline\n- Detailed architectural analysis\n- Photo galleries and virtual tours\n- Manuscript collections\n- Current monks and teachings\n- Visitor guidelines and facilities\n- Related research papers`);
+                console.log('Full monastery details:', monastery);
+            }
+        }
+
+
+        function viewPhotoGallery(name) {
+            const monastery = monasteryData.find(m => m.name === name);
+            alert(`Opening photo gallery for ${name}\n\nCollections include:\n- Architectural details\n- Festival celebrations\n- Daily monastic life\n- Ancient artifacts and manuscripts\n- Surrounding landscapes\n- Historical photographs`);
+            console.log(`Photo gallery for: ${name}`, monastery);
+        }
+
+        function getDirections(lat, lng) {
+            const monastery = monasteryData.find(m => m.lat === lat && m.lng === lng);
+            if (monastery) {
+                // Provide detailed travel information
+                const travelInfo = `
+Directions to ${monastery.name}:
+
+📍 Location: ${lat}, ${lng}
+🏔️ Elevation: ${monastery.elevation}
+🚗 Road Access: ${monastery.accessible ? 'Vehicle accessible' : 'Requires trekking'}
+
+Best Route: ${monastery.accessible ? 
+    'Drive via NH10 from Gangtok, then local roads' : 
+    'Drive to nearest point, then trek (guide recommended)'}
+
+Travel Tips:
+- Best time: ${monastery.bestTime}
+- Carry: Warm clothes, water, and respect monastery rules
+- Special events: ${monastery.specialEvents}
+
+Opening Google Maps for detailed navigation...`;
+                
+                alert(travelInfo);
+            }
+            
+            const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+            window.open(googleMapsUrl, '_blank');
+        }
+
+        // Navigation functionality
+        document.querySelectorAll('.nav-item a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Update active state
+                document.querySelectorAll('.nav-item a').forEach(navLink => navLink.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Smooth scroll to section
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 100) {
+                navbar.style.background = '#f1f1ef';
+                navbar.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
+            } else {
+                navbar.style.background = '#f1f1ef';
+                navbar.style.boxShadow = 'none';
+            }
+        });
+
+        // Counter animation
+        function animateCounter(element, target, duration = 2500) {
+            const start = performance.now();
+            const startValue = 0;
+
+            function updateCounter(currentTime) {
+                const elapsed = currentTime - start;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const current = Math.floor(startValue + (target - startValue) * easeOutQuart(progress));
+                element.textContent = current.toLocaleString();
+
+                if (progress < 1) {
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    element.textContent = target.toLocaleString();
+                }
+            }
+
+            requestAnimationFrame(updateCounter);
+        }
+
+        function easeOutQuart(t) {
+            return 1 - (--t) * t * t * t;
+        }
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    
+                    // Animate counters
+                    const counters = entry.target.querySelectorAll('[data-count]');
+                    counters.forEach(counter => {
+                        const target = parseInt(counter.dataset.count);
+                        animateCounter(counter, target);
+                    });
+                    
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // Hero particles animation
+        function createParticles() {
+            const particlesContainer = document.querySelector('.hero-particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random positioning
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Enhanced button interactions
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px) scale(1.02)';
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+            
+            btn.addEventListener('click', function(e) {
+                if (this.href === '#' || this.href.includes('#')) {
+                    e.preventDefault();
+                    
+                    // Create ripple effect
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.cssText = `
+                        position: absolute;
+                        width: ${size}px;
+                        height: ${size}px;
+                        left: ${x}px;
+                        top: ${y}px;
+                        background: rgba(255, 255, 255, 0.3);
+                        border-radius: 50%;
+                        transform: scale(0);
+                        animation: ripple 0.6s ease-out;
+                        pointer-events: none;
+                    `;
+                    
+                    this.style.position = 'relative';
+                    this.style.overflow = 'hidden';
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => ripple.remove(), 600);
+                    
+                    console.log('Button clicked:', this.textContent.trim());
+                }
+            });
+        });
+
+        // Add ripple animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Mobile menu toggle (basic implementation)
+        document.querySelector('.mobile-toggle').addEventListener('click', function() {
+            const navMenu = document.querySelector('.nav-menu');
+            navMenu.style.display = navMenu.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        // Section visibility tracking for navigation
+        const sections = document.querySelectorAll('section[id]');
+        const sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const currentId = entry.target.id;
+                    document.querySelectorAll('.nav-item a').forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === `#${currentId}`) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, { threshold: 0.3 });
+
+        sections.forEach(section => sectionObserver.observe(section));
+
+        // Monastery Modal Functionality
+        function showMonasteryModal(monasteryData) {
+            const modal = document.getElementById('monasteryModal');
+            const title = document.getElementById('modalTitle');
+            const subtitle = document.getElementById('modalSubtitle');
+            const description = document.getElementById('modalDescription');
+            const image = document.getElementById('modalImage');
+            const view3D = document.getElementById('modal3DView');
+            const iframe = view3D.querySelector('iframe');
+            const directionsBtn = document.getElementById('modalDirectionsBtn');
+            
+            // Update modal content
+            title.textContent = monasteryData.name;
+            subtitle.textContent = monasteryData.subtitle || 'Discover the rich heritage and spiritual significance';
+            description.textContent = monasteryData.description;
+
+            // Attach directions handler with the correct coordinates if available
+            if (typeof monasteryData.lat === 'number' && typeof monasteryData.lng === 'number') {
+                directionsBtn.style.display = 'inline-flex';
+                directionsBtn.onclick = function(e) {
+                    e.preventDefault();
+                    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${monasteryData.lat},${monasteryData.lng}`;
+                    window.open(googleMapsUrl, '_blank');
+                };
+            } else {
+                // Fallback: try to lookup from global dataset by name
+                const found = (window.monasteryData || []).find(m => m.name === monasteryData.name);
+                if (found && typeof found.lat === 'number' && typeof found.lng === 'number') {
+                    directionsBtn.style.display = 'inline-flex';
+                    directionsBtn.onclick = function(e) {
+                        e.preventDefault();
+                        const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${found.lat},${found.lng}`;
+                        window.open(googleMapsUrl, '_blank');
+                    };
+                } else {
+                    directionsBtn.style.display = 'none';
+                    directionsBtn.onclick = null;
+                }
+            }
+            
+            // Show 3D view for specific monasteries
+            if (monasteryData.name === 'Rumtek Monastery') {
+                image.style.display = 'none';
+                view3D.style.display = 'block';
+                iframe.src = 'https://www.google.com/maps/embed?pb=!4v1757272696096!6m8!1m7!1sCAoSF0NJSE0wb2dLRUlDQWdJRDJnWVdjb2dF!2m2!1d27.2885258949387!2d88.56180959787903!3f49.28546327067793!4f13.88784359585253!5f0.7721923095919727';
+            } else if (monasteryData.name === 'Labrang Monastery') {
+                image.style.display = 'none';
+                view3D.style.display = 'block';
+                iframe.src = 'https://www.google.com/maps/embed?pb=!4v1757275963788!6m8!1m7!1sCAoSFkNJSE0wb2dLRUlDQWdJQ0UzUFN5Snc.!2m2!1d35.19349857117135!2d102.5040644838291!3f337.07074!4f16.881029999999996!5f0.7820865974627469';
+            } else if (monasteryData.name === 'Enchey Monastery') {
+                image.style.display = 'none';
+                view3D.style.display = 'block';
+                iframe.src = 'https://www.google.com/maps/embed?pb=!4v1757276720783!6m8!1m7!1sCAoSF0NJSE0wb2dLRUlDQWdJREc2cWJ1andF!2m2!1d27.33580288383717!2d88.61928037024981!3f225.86494!4f15.530550000000005!5f0.7820865974627469';
+            } else if (monasteryData.name === 'Tashiding Monastery' || monasteryData.name === 'Tashiding Monestry') {
+                image.style.display = 'none';
+                view3D.style.display = 'block';
+                iframe.src = 'https://www.google.com/maps/embed?pb=!4v1757278210515!6m8!1m7!1sCAoSFkNJSE0wb2dLRUlDQWdJQ0V6b09UVnc.!2m2!1d27.3080960299431!2d88.29783391014004!3f260!4f10!5f0.7820865974627469';
+            } else if (
+                monasteryData.name === 'Pemayangtse Monastery' ||
+                monasteryData.name === 'Pemayangtse Monestary' ||
+                monasteryData.name === 'Pemayaangtse Monestary' ||
+                monasteryData.name === 'Pemayangtse Monestry'
+            ) {
+                image.style.display = 'none';
+                view3D.style.display = 'block';
+                iframe.src = 'https://www.google.com/maps/embed?pb=!4v1757361108566!6m8!1m7!1sCAoSF0NJSE0wb2dLRUlDQWdJREVoSlhucEFF!2m2!1d27.30518919282202!2d88.25156580066201!3f172.0075!4f29.68105!5f0.7820865974627469';
+            } else {
+                image.style.display = 'block';
+                view3D.style.display = 'none';
+                iframe.src = '';
+                
+                // Update image if provided
+                if (monasteryData.image) {
+                    image.style.backgroundImage = `url(${monasteryData.image})`;
+                    image.style.backgroundSize = 'cover';
+                    image.style.backgroundPosition = 'center';
+                }
+            }
+            
+            // Show modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function hideMonasteryModal() {
+            const modal = document.getElementById('monasteryModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Sacred Sikkim website initialized');
+            
+            // Initialize map
+            initMap();
+            
+            // Create particles
+            createParticles();
+            
+            // Observe elements for fade-in animation
+            const fadeElements = document.querySelectorAll('.fade-in');
+            fadeElements.forEach(el => observer.observe(el));
+            
+            // Observe stats section
+            const statsSection = document.querySelector('.stats');
+            if (statsSection) {
+                observer.observe(statsSection);
+            }
+            
+            // Monastery Modal Event Listeners
+            const closeModalBtn = document.getElementById('closeModal');
+            const modalOverlay = document.getElementById('monasteryModal');
+            
+            // Close modal when clicking close button
+            closeModalBtn.addEventListener('click', hideMonasteryModal);
+            
+            // Close modal when clicking outside
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) {
+                    hideMonasteryModal();
+                }
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                    hideMonasteryModal();
+                }
+            });
+            
+            // Add click listeners to monastery cards
+            const monasteryCards = document.querySelectorAll('.monastery-card');
+            monasteryCards.forEach(card => {
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', function() {
+                    const title = card.querySelector('.monastery-title').textContent;
+                    const description = card.querySelector('.monastery-description').textContent;
+                    const found = (window.monasteryData || []).find(m => m.name === title);
+                    
+                    const monasteryData = {
+                        name: title,
+                        description: description,
+                        subtitle: 'Explore the spiritual heritage and cultural significance',
+                        lat: found && typeof found.lat === 'number' ? found.lat : undefined,
+                        lng: found && typeof found.lng === 'number' ? found.lng : undefined
+                    };
+                    
+                    showMonasteryModal(monasteryData);
+                });
+            });
+
+            // Add loading states for development
+            setTimeout(() => {
+                document.body.classList.add('loaded');
+            }, 500);
+
+            // AI Chat functionality
+            const aiToggle = document.querySelector('.ai-assistant-toggle');
+            const aiChatBox = document.getElementById('aiChatBox');
+            const aiChatClose = document.getElementById('aiChatClose');
+            const aiChatForm = document.getElementById('aiChatForm');
+            const aiChatInput = document.getElementById('aiChatInput');
+            const aiChatMessages = document.getElementById('aiChatMessages');
+
+            function openAIChat() {
+                aiChatBox.classList.add('open');
+                aiChatBox.setAttribute('aria-hidden', 'false');
+                setTimeout(() => aiChatInput && aiChatInput.focus(), 50);
+            }
+
+            function closeAIChat() {
+                aiChatBox.classList.remove('open');
+                aiChatBox.setAttribute('aria-hidden', 'true');
+            }
+
+            function addMessage(message, isUser = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = isUser ? 'user-message' : 'ai-message';
+                if (isUser) {
+                    messageDiv.textContent = message;
+                } else {
+                    messageDiv.innerHTML = message;
+                }
+                aiChatMessages.appendChild(messageDiv);
+                aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+            }
+
+            function getAIResponse(userMessage) {
+                const responses = {
+                    'hello': 'Namaste! Welcome to Sacred Sikkim. I\'m your AI travel assistant. I can help you plan your spiritual journey, suggest monastery tours, recommend accommodations, and provide travel tips. What type of experience are you looking for?',
+                    
+                    'plan tour': 'I\'d love to help you plan your Sikkim monastery tour! Here are some popular tour options:\n\n🏛️ **Spiritual Heritage Tour (5-7 days)**: Gangtok → Rumtek → Enchey → Pemayangtse → Tashiding\n\n⛰️ **High Altitude Monastery Trek (7-10 days)**: Includes remote monasteries like Phensang and Sang\n\n👑 **Royal & Cultural Tour (4-5 days)**: Labrang Monastery, Tsuklakhang Palace, traditional villages\n\nWhat\'s your preferred duration and interests?',
+                    
+                    '3 days': 'Perfect! Here\'s a 3-day Sikkim monastery tour:\n\n**Day 1 - Gangtok**: Enchey Monastery, Tsuklakhang Palace, local markets\n**Day 2 - Rumtek**: Dharma Chakra Centre, monastery complex tour\n**Day 3 - Pemayangtse**: Ancient Nyingma monastery, Pelling views\n\nWould you like me to add accommodation suggestions and transportation details?',
+                    
+                    '5 days': 'Excellent choice! Here\'s a comprehensive 5-day Sikkim monastery tour:\n\n**Day 1**: Gangtok arrival, Enchey Monastery, Tsuklakhang Palace\n**Day 2**: Rumtek Monastery (full day with meditation session)\n**Day 3**: Pemayangtse Monastery, Rabdentse ruins\n**Day 4**: Tashiding Monastery, sacred pilgrimage site\n**Day 5**: Labrang Monastery, departure\n\nShall I customize this based on your specific interests?',
+                    
+                    '7 days': 'Fantastic! A 7-day tour allows deep exploration:\n\n**Days 1-2**: Gangtok monasteries (Enchey, Tsuklakhang, Rumtek)\n**Day 3**: Pemayangtse & Rabdentse heritage sites\n**Day 4**: Tashiding sacred pilgrimage\n**Day 5**: Labrang royal monastery\n**Day 6**: Phensang meditation retreat\n**Day 7**: Local village monasteries, departure\n\nWould you like trekking options or cultural experiences added?',
+                    
+                    'accommodation': 'Here are the best accommodation options near monasteries:\n\n🏨 **Gangtok**: Hotel Mayur, The Royal Plaza (near Enchey)\n🏨 **Rumtek**: Rumtek Monastery Guest House, local homestays\n🏨 **Pelling**: Hotel Mount Pandim (near Pemayangtse)\n🏨 **Tashiding**: Monastery guest house, eco-lodges\n\nBudget range: ₹800-₹5000 per night. Would you like specific recommendations?',
+                    
+                    'transportation': 'Getting around Sikkim monasteries:\n\n🚗 **Private Taxi**: ₹2000-₹3000 per day (recommended)\n🚌 **Shared Taxis**: ₹200-₹500 per person\n🚁 **Helicopter**: Gangtok to Pelling (₹3000-₹5000)\n🚶 **Trekking**: Some monasteries require hiking\n\nPermits needed: Inner Line Permit (₹100). Need help with arrangements?',
+                    
+                    'best time': 'Best time to visit Sikkim monasteries:\n\n🌸 **Spring (Mar-May)**: Clear views, pleasant weather\n☀️ **Summer (Jun-Aug)**: Monsoon season, lush greenery\n🍂 **Autumn (Sep-Nov)**: Perfect weather, festival season\n❄️ **Winter (Dec-Feb)**: Snow-capped views, fewer crowds\n\n**Peak Season**: October-November for best monastery experiences!',
+                    
+                    'festivals': 'Sikkim\'s major monastery festivals:\n\n🎭 **Pang Lhabsol** (Aug-Sep): Guardian deity festival at Enchey\n🎪 **Losar** (Feb-Mar): Tibetan New Year celebrations\n🕉️ **Saga Dawa** (May-Jun): Buddha\'s birth, enlightenment, death\n🎨 **Cham Dance** (Various): Sacred mask dances\n\nWould you like festival-specific tour planning?',
+                    
+                    'budget': 'Sikkim monastery tour budget guide:\n\n💰 **Budget (₹3000-5000/day)**: Guest houses, shared transport\n💰 **Mid-range (₹5000-8000/day)**: Hotels, private taxi\n💰 **Luxury (₹8000+/day)**: Premium resorts, helicopter tours\n\nIncludes: Accommodation, transport, meals, permits. Need detailed breakdown?',
+                    
+                    'monasteries': 'Sikkim has over 250 monasteries! Here are the must-visit ones:\n\n🏛️ **Rumtek**: Kagyu lineage headquarters\n🏛️ **Pemayangtse**: Oldest Nyingma monastery (1705)\n🏛️ **Enchey**: Festival hub with city views\n🏛️ **Tashiding**: Most sacred pilgrimage site\n🏛️ **Labrang**: Royal monastery with coronation throne\n\nWhich sect or region interests you most?',
+                    
+                    'rumtek': 'Rumtek Monastery - The Dharma Chakra Centre:\n\n📍 **Location**: 24km from Gangtok\n⏰ **Best Time**: 6 AM - 6 PM\n🎫 **Entry**: Free (donations welcome)\n⏱️ **Duration**: 2-3 hours\n🏨 **Stay**: Monastery guest house available\n\n**Highlights**: Black Crown of Karmapa, golden stupas, meditation halls. Book a guided tour?',
+                    
+                    'pemayangtse': 'Pemayangtse Monastery - Ancient Nyingma Heritage:\n\n📍 **Location**: Near Pelling, West Sikkim\n⏰ **Best Time**: 7 AM - 5 PM\n🎫 **Entry**: ₹25 per person\n⏱️ **Duration**: 1-2 hours\n🏨 **Stay**: Hotel Mount Pandim nearby\n\n**Highlights**: Zangdok Palri sculpture, ancient murals, Kanchenjunga views. Include in your tour?',
+                    
+                    'travel': 'Essential Sikkim travel information:\n\n📋 **Permits**: Inner Line Permit required (₹100)\n💊 **Health**: Altitude sickness prevention\n👕 **Clothing**: Warm layers, modest dress for monasteries\n📱 **Connectivity**: Limited in remote areas\n💳 **Payment**: Carry cash for monasteries\n\nNeed help with permit applications or health tips?',
+                    
+                    'history': 'Sikkim\'s Buddhist heritage timeline:\n\n🏛️ **8th Century**: Guru Rinpoche visits Sikkim\n🏛️ **1642**: Sikkim kingdom established\n🏛️ **1701**: First monastery (Dubdi) built\n🏛️ **1975**: Sikkim joins India\n🏛️ **Today**: 250+ active monasteries\n\nEach monastery has unique historical significance. Want to explore specific periods?',
+                    
+                    'trekking': 'Monastery trekking options in Sikkim:\n\n🥾 **Easy**: Enchey, Rumtek (road accessible)\n🥾 **Moderate**: Tashiding, Pemayangtse\n🥾 **Challenging**: Phensang, Sang (high altitude)\n🥾 **Expert**: Remote meditation caves\n\n**Duration**: 2-8 days. Need trekking permits and guide arrangements?',
+                    
+                    'photography': 'Photography guidelines for monasteries:\n\n📸 **Allowed**: Exterior shots, general views\n📸 **Restricted**: Inside prayer halls, during ceremonies\n📸 **Prohibited**: Flash photography, disrespectful poses\n📸 **Best Times**: Early morning, golden hour\n\n**Tip**: Ask permission before photographing monks. Need photography tour planning?',
+                    
+                    'spiritual': 'Spiritual experiences in Sikkim monasteries:\n\n🧘 **Meditation**: Rumtek, Phensang offer sessions\n🕉️ **Prayer**: Join morning/evening prayers\n🎭 **Ceremonies**: Attend Cham dances and festivals\n📿 **Blessings**: Receive blessings from resident lamas\n\n**Retreats**: 3-day meditation retreats available. Interested in spiritual programs?',
+                    
+                    'food': 'Monastery and local cuisine:\n\n🍜 **Monastery Food**: Simple vegetarian meals\n🍲 **Local Specialties**: Momos, thukpa, gundruk\n☕ **Tea**: Traditional butter tea at monasteries\n🍽️ **Restaurants**: Gangtok has diverse options\n\n**Dietary**: Most monasteries serve vegetarian food. Need restaurant recommendations?',
+                    
+                    'safety': 'Safety tips for monastery visits:\n\n🚶 **Altitude**: Gradual acclimatization needed\n👕 **Dress**: Modest, warm clothing required\n📱 **Communication**: Inform others of your plans\n🏥 **Medical**: Carry basic first aid\n🌧️ **Weather**: Check conditions before travel\n\n**Emergency**: Keep local contact numbers handy. Need safety checklist?',
+                    
+                    'default': 'I can help you with:\n\n🗺️ **Tour Planning**: Customized monastery itineraries\n🏨 **Accommodation**: Hotel and guest house bookings\n🚗 **Transportation**: Taxi and permit arrangements\n🎭 **Festivals**: Festival-specific tour planning\n📸 **Photography**: Best spots and guidelines\n🧘 **Spiritual**: Meditation and retreat programs\n\nWhat would you like to plan for your Sikkim journey?'
+                };
+
+                const lowerMessage = userMessage.toLowerCase();
+                for (const [key, response] of Object.entries(responses)) {
+                    if (lowerMessage.includes(key)) {
+                        return response;
+                    }
+                }
+                return responses.default;
+            }
+
+            aiToggle && aiToggle.addEventListener('click', openAIChat);
+            aiChatClose && aiChatClose.addEventListener('click', closeAIChat);
+            aiChatForm && aiChatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const userMessage = aiChatInput.value.trim();
+                if (userMessage) {
+                    addMessage(userMessage, true);
+                    aiChatInput.value = '';
+                    
+                    // Send message to streaming AI
+                    sendStreamingMessage(userMessage);
+                }
+            });
+
+            // Streaming chat functionality
+            async function sendStreamingMessage(userMessage) {
+                try {
+                    const response = await fetch('http://localhost:3000/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: userMessage })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    
+                    // Create AI message container
+                    const aiMessageDiv = document.createElement('div');
+                    aiMessageDiv.className = 'ai-message';
+                    aiMessageDiv.innerHTML = '<b>AI:</b> ';
+                    aiChatMessages.appendChild(aiMessageDiv);
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value, { stream: true });
+                        const lines = chunk.split('\n\n').filter(Boolean);
+                        
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                const data = line.replace('data: ', '');
+                                if (data === '[DONE]') {
+                                    return;
+                                }
+                                aiMessageDiv.innerHTML += data;
+                                aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    addMessage('Sorry, I encountered an error. Please make sure the AI server is running on localhost:3000', false);
+                }
+            }
+
+            // Search overlay
+            const searchToggle = document.querySelector('.search-toggle');
+            const searchOverlay = document.querySelector('.search-overlay');
+            const searchInput = document.querySelector('.search-input');
+            function openSearch() {
+                searchOverlay.classList.add('open');
+                searchOverlay.setAttribute('aria-hidden', 'false');
+                setTimeout(() => searchInput && searchInput.focus(), 50);
+            }
+            function closeSearch() {
+                searchOverlay.classList.remove('open');
+                searchOverlay.setAttribute('aria-hidden', 'true');
+            }
+            searchToggle && searchToggle.addEventListener('click', openSearch);
+            searchOverlay && searchOverlay.addEventListener('click', (e) => { if (e.target === searchOverlay) closeSearch(); });
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSearch(); });
+
+            // Mega menu open on click for mobile/tablet
+            const megaParent = document.querySelector('.mega-parent');
+            const megaMenu = document.querySelector('.mega-menu');
+            const megaToggle = document.querySelector('.mega-toggle');
+            megaToggle && megaToggle.addEventListener('click', (e) => {
+                if (window.innerWidth >= 769) return; // hover on desktop
+                e.preventDefault();
+                megaMenu && megaMenu.classList.toggle('open');
+            });
+            document.addEventListener('click', (e) => {
+                if (megaParent && !megaParent.contains(e.target)) megaMenu && megaMenu.classList.remove('open');
+            });
+
+            // Scroll progress bar
+            const progress = document.querySelector('.scroll-progress');
+            function updateProgress() {
+                const scrollTop = window.scrollY;
+                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const percent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+                progress.style.width = percent + '%';
+            }
+            window.addEventListener('scroll', updateProgress);
+            window.addEventListener('resize', updateProgress);
+            updateProgress();
+        });
+
+        // Add some CSS for the loaded state
+        document.head.insertAdjacentHTML('beforeend', `
+            <style>
+                body:not(.loaded) .fade-in {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                body.loaded .fade-in {
+                    transition: opacity 0.8s ease, transform 0.8s ease;
+                }
+            </style>
+        `);
+    </script>
+</body>
+</html>

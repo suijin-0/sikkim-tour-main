@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Local AI Chatbot (Streaming)</title>
+  <style>
+    body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; margin: 20px; }
+    #chatbox { width: 400px; height: 400px; border: 1px solid #ccc; padding: 10px; overflow-y: auto; }
+    #input { width: 300px; padding: 5px; }
+    button { padding: 5px 10px; }
+    .user { color: blue; }
+    .ai { color: green; }
+  </style>
+</head>
+<body>
+  <h2>💬 Local AI Assistant (Streaming)</h2>
+  <div id="chatbox"></div>
+  <input id="input" type="text" placeholder="Type a message..." />
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById("input");
+      const chatbox = document.getElementById("chatbox");
+
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
+
+      chatbox.innerHTML += `<p class="user"><b>You:</b> ${userMessage}</p>`;
+      input.value = "";
+
+      const aiPara = document.createElement("p");
+      aiPara.className = "ai";
+      aiPara.innerHTML = "<b>AI:</b> ";
+      chatbox.appendChild(aiPara);
+
+      const eventSource = new EventSourcePolyfill("http://localhost:3000/chat", {
+        headers: { "Content-Type": "application/json" },
+        payload: JSON.stringify({ message: userMessage }),
+        method: "POST"
+      });
+
+      eventSource.onmessage = (event) => {
+        if (event.data === "[DONE]") {
+          eventSource.close();
+          return;
+        }
+        aiPara.innerHTML += event.data;
+        chatbox.scrollTop = chatbox.scrollHeight;
+      };
+    }
+
+    // Polyfill for POST EventSource (since native only supports GET)
+    class EventSourcePolyfill {
+      constructor(url, options) {
+        this.eventSource = null;
+        this.controller = new AbortController();
+
+        fetch(url, {
+          method: options.method || "POST",
+          headers: options.headers || {},
+          body: options.payload,
+          signal: this.controller.signal
+        }).then(async (res) => {
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split("\n\n").filter(Boolean);
+            for (const line of lines) {
+              if (line.startsWith("data: ")) {
+                const data = line.replace("data: ", "");
+                if (this.onmessage) this.onmessage({ data });
+              }
+            }
+          }
+        });
+      }
+      close() { this.controller.abort(); }
+    }
+  </script>
+</body>
+</html>
