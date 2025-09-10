@@ -355,14 +355,39 @@
         /* Hero Section */
         .hero {
             height: 100vh;
-            background: linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(212, 175, 55, 0.8) 100%),
-                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900"><defs><linearGradient id="mountain1" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:%23667eea;stop-opacity:0.8" /><stop offset="100%" style="stop-color:%234c51bf;stop-opacity:0.4" /></linearGradient><linearGradient id="mountain2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:%23f093fb;stop-opacity:0.6" /><stop offset="100%" style="stop-color:%23f5576c;stop-opacity:0.3" /></linearGradient></defs><polygon fill="url(%23mountain1)" points="0,500 240,200 480,350 720,150 960,300 1200,180 1440,250 1440,900 0,900"/><polygon fill="url(%23mountain2)" points="120,600 360,350 600,450 840,250 1080,400 1320,280 1440,350 1440,900 0,900"/></svg>') center/cover;
+            background: black;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
             overflow: hidden;
         }
+
+        /* Background video styling */
+        .hero-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            object-fit: cover;
+            filter: none;
+        }
+
+        /* Gradient overlay to improve text readability */
+        .hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%);
+            z-index: 1;
+        }
+
+        
 
         .hero-particles {
             position: absolute;
@@ -393,12 +418,13 @@
             font-size: 4.5rem;
             font-weight: 800;
             margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, #ffffff 0%, #f7fafc 50%, #D4AF37 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #ffffff;
+            -webkit-text-fill-color: #ffffff;
             text-shadow: 0 4px 8px rgba(0,0,0,0.3);
             animation: slideInUp 1s ease-out;
         }
+
+        
 
         .hero-subtitle {
             font-size: 1.4rem;
@@ -577,6 +603,7 @@
             border: 2px solid rgba(255, 255, 255, 0.3);
             position: relative;
             overflow: hidden;
+            transform: translateZ(0);
         }
 
         .feature-card::before {
@@ -596,17 +623,47 @@
                 0 12px 40px rgba(0, 0, 0, 0.15),
                 inset 0 1px 0 rgba(255, 255, 255, 0.6),
                 inset 0 -1px 0 rgba(0, 0, 0, 0.15),
-                0 0 0 2px rgba(255, 255, 255, 0.2);
+                0 0 0 2px rgba(255, 255, 255, 0.2),
+                0 0 24px rgba(212, 175, 55, 0.35);
             border: 2px solid rgba(255, 255, 255, 0.4);
         }
 
         .feature-card:hover .feature-title {
             color: #1a1a1a;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 6px;
+            text-decoration-color: rgba(212, 175, 55, 0.6);
         }
 
         .feature-card:hover .feature-description {
             color: #000000;
+        }
+
+        /* Hover effects: icon lift and subtle shine */
+        .feature-card:hover .feature-icon {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: -120%;
+            left: -120%;
+            width: 240%;
+            height: 240%;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.15), transparent 60%);
+            transform: rotate(25deg);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .feature-card:hover::after {
+            opacity: 1;
         }
 
         .feature-card:active {
@@ -721,6 +778,7 @@
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             position: relative;
             overflow: hidden;
+            transform: translateZ(0);
         }
 
         .monastery-card::before {
@@ -741,7 +799,7 @@
 
         .monastery-card:hover {
             transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(212, 175, 55, 0.2);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(212, 175, 55, 0.25), 0 0 24px rgba(212, 175, 55, 0.25);
         }
 
         .monastery-card:hover .monastery-image {
@@ -750,11 +808,58 @@
 
         .monastery-card:hover .monastery-title {
             color: var(--primary-gold);
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 6px;
+            text-decoration-color: rgba(212, 175, 55, 0.6);
         }
 
         .monastery-card:hover .btn {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        /* Monastery tags hover interaction */
+        .tag {
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--primary-gold-dark);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease, border-color 0.25s ease;
+        }
+
+        .monastery-card:hover .monastery-tags .tag {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: rgba(212, 175, 55, 0.4);
+        }
+
+        .monastery-tags .tag:hover {
+            background: rgba(212, 175, 55, 0.22);
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+        /* Soft sheen on hover */
+        .monastery-card::after {
+            content: '';
+            position: absolute;
+            top: -120%;
+            left: -120%;
+            width: 240%;
+            height: 240%;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.12), transparent 60%);
+            transform: rotate(25deg);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .monastery-card:hover::after {
+            opacity: 1;
         }
 
         .monastery-image {
@@ -1433,6 +1538,17 @@
         </div>
         <div class="ai-chat-input">
             <form class="ai-chat-form" id="aiChatForm">
+                <select id="aiLang" aria-label="Chat language" style="border: 1px solid rgba(0,0,0,0.2); border-radius: 10px; padding: 0.6rem 0.8rem; background: #fff; color: #111; font-size: 0.9rem;">
+                    <option value="auto" selected>Language</option>
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                    <option value="si">Sikkimese</option>
+                    <option value="ne">Nepali</option>
+                    <option value="lep">Lepcha</option>
+                </select>
+                <label for="aiSpeak" style="display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; color:#111; background:#fff; border:1px solid rgba(0,0,0,0.2); padding:0.45rem 0.6rem; border-radius:10px;">
+                    <input type="checkbox" id="aiSpeak" /> Speak
+                </label>
                 <input type="text" class="ai-chat-input-field" id="aiChatInput" placeholder="Plan my tour, accommodation, or ask about monasteries..." />
                 <button type="submit" class="ai-chat-send" aria-label="Send message">
                     <i class="fas fa-paper-plane"></i>
@@ -1443,6 +1559,9 @@
 
     <!-- Hero Section -->
     <section class="hero" id="home">
+        <video class="hero-video" autoplay muted loop playsinline>
+            <source src="WhatsApp Video 2025-09-10 at 00.59.10_55d34f5a.mp4" type="video/mp4">
+        </video>
         <div class="hero-particles"></div>
         <div class="hero-content">
             <h1 class="playfair">Sacred Sikkim</h1>
@@ -2942,19 +3061,21 @@ Opening Google Maps for detailed navigation...`;
                     aiChatInput.value = '';
                     
                     // Send message to streaming AI
-                    sendStreamingMessage(userMessage);
+                    const langSelect = document.getElementById('aiLang');
+                    const lang = langSelect ? langSelect.value : 'auto';
+                    sendStreamingMessage(userMessage, lang);
                 }
             });
 
             // Streaming chat functionality
-            async function sendStreamingMessage(userMessage) {
+            async function sendStreamingMessage(userMessage, lang) {
                 try {
                     const response = await fetch('http://localhost:3000/chat', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ message: userMessage })
+                        body: JSON.stringify({ message: userMessage, lang })
                     });
 
                     if (!response.ok) {
@@ -2969,6 +3090,7 @@ Opening Google Maps for detailed navigation...`;
                     aiMessageDiv.className = 'ai-message';
                     aiMessageDiv.innerHTML = '<b>AI:</b> ';
                     aiChatMessages.appendChild(aiMessageDiv);
+                    let spokenBuffer = '';
 
                     while (true) {
                         const { done, value } = await reader.read();
@@ -2981,9 +3103,27 @@ Opening Google Maps for detailed navigation...`;
                             if (line.startsWith('data: ')) {
                                 const data = line.replace('data: ', '');
                                 if (data === '[DONE]') {
+                                    // TTS for English responses when Speak is enabled
+                                    try {
+                                        const speakToggle = document.getElementById('aiSpeak');
+                                        const langSelect = document.getElementById('aiLang');
+                                        if (speakToggle && speakToggle.checked && langSelect && langSelect.value === 'en' && 'speechSynthesis' in window && spokenBuffer.trim()) {
+                                            const utter = new SpeechSynthesisUtterance(spokenBuffer);
+                                            utter.lang = 'en-US';
+                                            utter.rate = 0.9;
+                                            utter.pitch = 1.0;
+                                            // Prefer a female English voice if available
+                                            const voices = window.speechSynthesis.getVoices();
+                                            const preferred = voices.find(v => v.lang.startsWith('en') && /Female|Samantha|Victoria|Zira|Jenny|Google US English/i.test(v.name));
+                                            if (preferred) utter.voice = preferred;
+                                            window.speechSynthesis.cancel();
+                                            window.speechSynthesis.speak(utter);
+                                        }
+                                    } catch(_) {}
                                     return;
                                 }
                                 aiMessageDiv.innerHTML += data;
+                                spokenBuffer += data;
                                 aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
                             }
                         }
@@ -3036,6 +3176,8 @@ Opening Google Maps for detailed navigation...`;
             window.addEventListener('resize', updateProgress);
             updateProgress();
         });
+
+        
 
         // Add some CSS for the loaded state
         document.head.insertAdjacentHTML('beforeend', `
