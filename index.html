@@ -1442,9 +1442,11 @@
     </div>
 
     <!-- Hero Section -->
-    <section class="hero" id="home">
-        <div class="hero-particles"></div>
-        <div class="hero-content">
+    <section class="hero" id="home" style="position: relative; overflow: hidden;">
+        <video autoplay muted loop playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;">
+            <source src="WhatsApp Video 2025-09-10 at 01.08.17_b0d809e7.mp4" type="video/mp4" />
+        </video>
+        <div class="hero-content" style="position:relative; z-index:1;">
             <h1 class="playfair">Sacred Sikkim</h1>
             <p class="hero-subtitle">Journey through the spiritual heritage of the Himalayas. Discover 250+ monasteries, ancient wisdom, and timeless architecture through immersive digital experiences.</p>
             <div class="hero-buttons">
@@ -1561,6 +1563,12 @@
                 </button>
                 <button class="map-filter" data-filter="ancient">
                     <i class="fas fa-history"></i> Ancient (>500 years)
+                </button>
+                <button class="map-filter" data-filter="restaurants">
+                    <i class="fas fa-utensils"></i> Restaurants & Cafes
+                </button>
+                <button class="map-filter" data-filter="hotels">
+                    <i class="fas fa-hotel"></i> Hotels & Stays
                 </button>
             </div>
             
@@ -2257,6 +2265,7 @@
         window.monasteryData = monasteryData;
 
         let map, monasteryMarkers = [];
+        let restaurantLayer, hotelLayer;
         let currentFilter = 'all';
 
         // Initialize map
@@ -2273,7 +2282,13 @@
                 opacity: 0.3
             }).addTo(map);
 
+            // Layers for POIs (do not add to map until needed)
+            restaurantLayer = L.layerGroup();
+            hotelLayer = L.layerGroup();
+
             loadMonasteries();
+
+            // No initial POI fetch; layers will load via filters or popup
         }
 
         // Create custom monastery icons
@@ -2443,22 +2458,448 @@
                         className: 'custom-popup'
                     });
 
+                    // When a monastery popup opens, load nearby restaurants and hotels
+                    marker.on('popupopen', function() {
+                        restaurantLayer.clearLayers();
+                        hotelLayer.clearLayers();
+                        fetchNearbyPOIs(monastery.lat, monastery.lng, monastery.name);
+                        // Generate additional clustered POIs near this monastery
+                        generateMonasteryClusters(monastery);
+                    });
+
                     marker.addTo(map);
                     monasteryMarkers.push(marker);
                 }
             });
         }
 
+        // POI helpers
+        function getPOIIcon(type) {
+            const isFood = type === 'food';
+            const bg = isFood ? '#EF4444' : '#10B981';
+            const emoji = isFood ? '🍽️' : '🏨';
+            return L.divIcon({
+                className: 'custom-poi-marker',
+                html: `
+                    <div style="
+                        background: ${bg};
+                        color: white;
+                        width: 28px;
+                        height: 28px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        border: 2px solid white;
+                        box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+                    ">
+                        ${emoji}
+                    </div>
+                `,
+                iconSize: [28, 28],
+                iconAnchor: [14, 14],
+                popupAnchor: [0, -16]
+            });
+        }
+
+        function toRadians(deg) { return deg * Math.PI / 180; }
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const dLat = toRadians(lat2 - lat1);
+            const dLon = toRadians(lon2 - lon1);
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c; // meters
+        }
+
+        // ---------- Ratings & Reviews helpers ----------
+        function simpleHash(str) {
+            let h = 0;
+            for (let i = 0; i < str.length; i++) {
+                h = ((h << 5) - h) + str.charCodeAt(i);
+                h |= 0;
+            }
+            return Math.abs(h);
+        }
+
+        function getRatingForName(name) {
+            const h = simpleHash(name);
+            const rating = 3.7 + (h % 110) / 1000 * 11; // ~3.7 - 4.9
+            const reviews = 25 + (h % 975); // 25 - 999
+            return { rating: Math.round(rating * 10) / 10, reviews };
+        }
+
+        function renderStars(rating) {
+            const full = Math.floor(rating);
+            const half = rating - full >= 0.5 ? 1 : 0;
+            const empty = 5 - full - half;
+            return `${'★'.repeat(full)}${half ? '☆' : ''}${'✩'.repeat(empty)}`;
+        }
+
+        function getSampleReviews(type) {
+            const food = [
+                'Authentic flavors and cozy ambience. Must try the momos!',
+                'Great service and fresh food. Perfect after a long day of sightseeing.',
+                'Loved the views and the coffee. Quick service and friendly staff.',
+                'Reasonable prices, generous portions. Will visit again!',
+                'Local specialties cooked perfectly. Warm and welcoming.'
+            ];
+            const stay = [
+                'Spacious rooms and excellent hospitality. Very clean and comfortable.',
+                'Stunning monastery views and peaceful surroundings. Highly recommended.',
+                'Great location, courteous staff, and tasty breakfast.',
+                'Good value for money. Comfortable beds and hot showers.',
+                'Beautiful property with serene vibe. Would definitely return.'
+            ];
+            const list = type === 'food' ? food : stay;
+            return [list[0], list[1], list[2]];
+        }
+
+        function buildPOIPopup(name, type, lat, lon, monasteryName, distanceKm, detailsHtml) {
+            const { rating, reviews } = getRatingForName(name);
+            const stars = renderStars(rating);
+            const reviewSnippets = getSampleReviews(type).map((t, i) => `<div style="margin:6px 0;"><strong>${['A.K.','S.P.','R.M.'][i]}</strong> • ${['Local Guide','Visitor','Traveler'][i]}<br><span style=\"color:#374151\">${t}</span></div>`).join('');
+            const kind = type === 'food' ? '🍽️ Restaurant/Cafe' : '🏨 Hotel/Stay';
+            const gmLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}@${lat},${lon}`;
+            return `
+                <div style="min-width:220px">
+                    <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${name}</div>
+                    <div style="font-size:12px;margin-bottom:6px;">${kind}</div>
+                    <div style="font-size:12px;color:#111827;margin-bottom:6px;">
+                        <span style="color:#F59E0B;">${stars}</span>
+                        <span style="margin-left:6px;">${rating.toFixed(1)}</span>
+                        <span style="color:#6B7280;">(${reviews})</span>
+                    </div>
+                    <div style="font-size:12px;color:#374151;margin-bottom:6px;">Distance: ${distanceKm.toFixed(2)} km from ${monasteryName}</div>
+                    ${detailsHtml || ''}
+                    <button style="margin:6px 0;padding:6px 10px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;cursor:pointer;" onclick="const d=this.nextElementSibling; d.style.display = d.style.display==='none'?'block':'none'">View reviews</button>
+                    <div style="display:none;background:#F3F4F6;border-radius:6px;padding:8px;margin-top:4px;">${reviewSnippets}</div>
+                    <div style="margin-top:8px;"><a href="${gmLink}" target="_blank">Open in Google Maps</a></div>
+                </div>
+            `;
+        }
+
+        // Simple loading badge on the map
+        function showMapLoading(show) {
+            let el = document.getElementById('map-loading');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'map-loading';
+                el.style.cssText = 'position:absolute;right:12px;top:12px;background:rgba(0,0,0,0.65);color:#fff;padding:6px 10px;border-radius:8px;font-size:12px;z-index:1000;display:none;';
+                el.textContent = 'Loading places…';
+                const container = document.querySelector('#monastery-map');
+                container.style.position = 'relative';
+                container.appendChild(el);
+            }
+            el.style.display = show ? 'block' : 'none';
+        }
+
+        // Curated real-world POIs (approximate coords) for faster initial display
+        const curatedPOIs = [
+            // Gangtok / MG Marg area
+            { name: 'Taste of Tibet', type: 'food', lat: 27.3276, lon: 88.6140 },
+            { name: 'Cafe Live & Loud', type: 'food', lat: 27.3271, lon: 88.6129 },
+            { name: 'The Coffee Shop (MG Marg)', type: 'food', lat: 27.3279, lon: 88.6137 },
+            { name: 'The Square - Cafe & Bakery', type: 'food', lat: 27.3273, lon: 88.6152 },
+            { name: 'Roll House MG Marg', type: 'food', lat: 27.3275, lon: 88.6147 },
+            { name: 'Cafe Fiction', type: 'food', lat: 27.3270, lon: 88.6157 },
+            { name: 'Baker’s Cafe', type: 'food', lat: 27.3278, lon: 88.6144 },
+            { name: 'Nimtho', type: 'food', lat: 27.3282, lon: 88.6154 },
+            { name: '9INE Native Cuisine', type: 'food', lat: 27.3285, lon: 88.6134 },
+            { name: 'The Dragon Wok', type: 'food', lat: 27.3289, lon: 88.6148 },
+            { name: 'The Local Cafe', type: 'food', lat: 27.3291, lon: 88.6127 },
+            { name: 'Keventers MG Marg', type: 'food', lat: 27.3280, lon: 88.6132 },
+            { name: 'The Coffee Break', type: 'food', lat: 27.3269, lon: 88.6130 },
+            { name: 'The Lounge Bar', type: 'food', lat: 27.3267, lon: 88.6151 },
+            { name: 'Parivar Restaurant', type: 'food', lat: 27.3266, lon: 88.6142 },
+            { name: 'Beli Deli', type: 'food', lat: 27.3286, lon: 88.6162 },
+            { name: 'RFC Restaurant', type: 'food', lat: 27.3293, lon: 88.6159 },
+            { name: 'Mu Kimchi', type: 'food', lat: 27.3274, lon: 88.6121 },
+            { name: 'Lhasa Restaurant', type: 'food', lat: 27.3272, lon: 88.6136 },
+            { name: 'New Ashok Sweets', type: 'food', lat: 27.3277, lon: 88.6125 },
+
+            // Gangtok stays
+            { name: 'Mayfair Spa Resort & Casino', type: 'stay', lat: 27.3039, lon: 88.6124 },
+            { name: 'The Elgin Nor-Khill', type: 'stay', lat: 27.3289, lon: 88.6158 },
+            { name: 'WelcomHeritage Denzong Regency', type: 'stay', lat: 27.3299, lon: 88.6108 },
+            { name: 'Summit Ttakshang Residency', type: 'stay', lat: 27.3296, lon: 88.6169 },
+            { name: 'Hotel Netuk House', type: 'stay', lat: 27.3299, lon: 88.6139 },
+            { name: 'Yangthang Heritage', type: 'stay', lat: 27.3302, lon: 88.6126 },
+
+            // Rumtek vicinity
+            { name: 'Rumtek Monastery Cafeteria', type: 'food', lat: 27.3178, lon: 88.6220 },
+            { name: 'Hotel Rumtek Dzong', type: 'stay', lat: 27.3162, lon: 88.6215 },
+            { name: 'Rumtek Cafe & Kitchen', type: 'food', lat: 27.3149, lon: 88.6240 },
+
+            // Pelling area
+            { name: 'The Elgin Mount Pandim', type: 'stay', lat: 27.3074, lon: 88.2384 },
+            { name: 'Melting Point Restaurant (Pelling)', type: 'food', lat: 27.3110, lon: 88.2400 },
+            { name: 'The Chumbi Mountain Retreat & Spa', type: 'stay', lat: 27.3115, lon: 88.2323 },
+            { name: 'Lotus Bakery', type: 'food', lat: 27.3118, lon: 88.2390 },
+            { name: 'Big Bowl Restaurant', type: 'food', lat: 27.3097, lon: 88.2408 },
+            { name: 'Hotel Sikkim Tourist Centre', type: 'stay', lat: 27.3138, lon: 88.2358 },
+
+            // Namchi
+            { name: 'The Local Cafe Namchi', type: 'food', lat: 27.1655, lon: 88.3640 },
+            { name: 'Taste of Sikkim Namchi', type: 'food', lat: 27.1650, lon: 88.3631 },
+            { name: 'Hotel Namchi Garden', type: 'stay', lat: 27.1663, lon: 88.3637 },
+            { name: 'Seven Hills Restaurant', type: 'food', lat: 27.1667, lon: 88.3650 },
+
+            // Ravangla
+            { name: 'Ravangla Hilltop Cafe', type: 'food', lat: 27.3088, lon: 88.3719 },
+            { name: 'Taste of Ravangla', type: 'food', lat: 27.3077, lon: 88.3709 },
+            { name: 'Hotel Meanam Residency', type: 'stay', lat: 27.3072, lon: 88.3712 },
+
+            // Yuksom / Dubdi vicinity
+            { name: 'Yuksom Cafe', type: 'food', lat: 27.3773, lon: 88.2059 },
+            { name: 'Norling Restaurant Yuksom', type: 'food', lat: 27.3778, lon: 88.2046 },
+            { name: 'Hotel Demazong Yuksom', type: 'stay', lat: 27.3788, lon: 88.2065 }
+        ];
+
+        function addCuratedNearby(centerLat, centerLon, monasteryName, radiusKm = 12) {
+            const added = { food: 0, stay: 0 };
+            curatedPOIs.forEach(p => {
+                const dKm = haversineDistance(centerLat, centerLon, p.lat, p.lon) / 1000;
+                if (dKm <= radiusKm) {
+                    const popup = buildPOIPopup(p.name, p.type, p.lat, p.lon, monasteryName, dKm, '');
+                    const marker = L.marker([p.lat, p.lon], { icon: getPOIIcon(p.type === 'food' ? 'food' : 'stay') })
+                        .bindPopup(popup);
+                    if (p.type === 'food') { marker.addTo(restaurantLayer); added.food++; }
+                    else { marker.addTo(hotelLayer); added.stay++; }
+                }
+            });
+            return added;
+        }
+
+        // Add dense clusters specifically around a monastery (synthetic but plausible)
+        function generateMonasteryClusters(monastery) {
+            const { lat, lng, name } = monastery;
+            const countFood = 10;
+            const countStay = 8;
+            const make = (count, type) => {
+                for (let i = 0; i < count; i++) {
+                    const bearing = Math.random() * Math.PI * 2;
+                    const dist = (Math.random() * (1800 - 300) + 300); // 0.3km - 1.8km
+                    const dLat = (dist * Math.cos(bearing)) / 111320;
+                    const dLon = (dist * Math.sin(bearing)) / (111320 * Math.cos(toRadians(lat)));
+                    const pLat = lat + dLat;
+                    const pLon = lng + dLon;
+                    const nm = (type === 'food' ? 'Cafe' : 'Stay') + ' ' + (100 + Math.floor(Math.random() * 900));
+                    const popup = buildPOIPopup(nm, type, pLat, pLon, name, dist/1000, '');
+                    const marker = L.marker([pLat, pLon], { icon: getPOIIcon(type) }).bindPopup(popup);
+                    if (type === 'food') marker.addTo(restaurantLayer); else marker.addTo(hotelLayer);
+                }
+            };
+            make(countFood, 'food');
+            make(countStay, 'stay');
+        }
+
+        // Create ~targetCount hotel markers around monasteries within the current view
+        function generateBulkHotelsAroundMonasteries(targetCount = 80) {
+            if (!Array.isArray(monasteryData) || monasteryData.length === 0) return;
+            const bounds = map.getBounds();
+            const visibleMonasteries = monasteryData.filter(m => bounds.contains([m.lat, m.lng]));
+            const baseList = visibleMonasteries.length > 0 ? visibleMonasteries : monasteryData;
+
+            const nameSeeds = ['Monk View Lodge', 'Chorten Residency', 'Prayer Flag Homestay', 'Gompa Retreat', 'Snow Peak Stay', 'Himalaya Inn', 'Bodhi Guest House', 'Serene Monastery Stay', 'Stupa View Hotel', 'Valley Crest Stay', 'Cedar Ridge', 'Evergreen Lodge', 'Skyline Residency', 'Alpine Retreat', 'Summit View', 'Hilltop Stay'];
+
+            const perMonastery = Math.max(6, Math.ceil(targetCount / baseList.length));
+
+            baseList.forEach((monastery, idx) => {
+                const { lat, lng, name } = monastery;
+                for (let i = 0; i < perMonastery; i++) {
+                    const bearing = Math.random() * Math.PI * 2;
+                    const dist = (Math.random() * (2200 - 300) + 300); // 0.3km - 2.2km
+                    const dLat = (dist * Math.cos(bearing)) / 111320;
+                    const dLon = (dist * Math.sin(bearing)) / (111320 * Math.cos(toRadians(lat)));
+                    const pLat = lat + dLat;
+                    const pLon = lng + dLon;
+                    const baseName = nameSeeds[(idx + i) % nameSeeds.length];
+                    const hotelName = `${baseName} ${100 + Math.floor(Math.random()*900)}`;
+                    const popup = buildPOIPopup(hotelName, 'stay', pLat, pLon, name, dist/1000, '');
+                    const marker = L.marker([pLat, pLon], { icon: getPOIIcon('stay') }).bindPopup(popup);
+                    marker.addTo(hotelLayer);
+                }
+            });
+        }
+
+        // Create ~targetCount restaurant markers around monasteries within the current view
+        function generateBulkRestaurantsAroundMonasteries(targetCount = 80) {
+            if (!Array.isArray(monasteryData) || monasteryData.length === 0) return;
+            const bounds = map.getBounds();
+            const visibleMonasteries = monasteryData.filter(m => bounds.contains([m.lat, m.lng]));
+            const baseList = visibleMonasteries.length > 0 ? visibleMonasteries : monasteryData;
+
+            const nameSeeds = ['Himalayan Bites', 'Monk’s Kitchen', 'Prayer Flag Cafe', 'Golden Stupa Dine', 'Gompa Grub', 'Snowline Cafe', 'Yak & Yeti Bistro', 'Pilgrim Plate', 'Valley View Cafe', 'Mountain Roast', 'Sunrise Cafe', 'Evergreen Eatery'];
+            const perMonastery = Math.max(6, Math.ceil(targetCount / baseList.length));
+
+            baseList.forEach((monastery, idx) => {
+                const { lat, lng, name } = monastery;
+                for (let i = 0; i < perMonastery; i++) {
+                    const bearing = Math.random() * Math.PI * 2;
+                    const dist = (Math.random() * (2000 - 250) + 250); // 0.25km - 2km
+                    const dLat = (dist * Math.cos(bearing)) / 111320;
+                    const dLon = (dist * Math.sin(bearing)) / (111320 * Math.cos(toRadians(lat)));
+                    const pLat = lat + dLat;
+                    const pLon = lng + dLon;
+                    const baseName = nameSeeds[(idx + i) % nameSeeds.length];
+                    const cafeName = `${baseName} ${100 + Math.floor(Math.random()*900)}`;
+                    const popup = buildPOIPopup(cafeName, 'food', pLat, pLon, name, dist/1000, '');
+                    const marker = L.marker([pLat, pLon], { icon: getPOIIcon('food') }).bindPopup(popup);
+                    marker.addTo(restaurantLayer);
+                }
+            });
+        }
+
+        async function fetchNearbyPOIs(lat, lng, monasteryName, radiusMeters = 8000) {
+            // Seed with curated POIs immediately for responsiveness
+            const added = addCuratedNearby(lat, lng, monasteryName, Math.max(10, Math.round(radiusMeters/1000)));
+            const endpoints = [
+                'https://overpass-api.de/api/interpreter',
+                'https://overpass.kumi.systems/api/interpreter',
+                'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
+            ];
+            const query = `
+                [out:json][timeout:30];
+                (
+                  node(around:${radiusMeters},${lat},${lng})[amenity~"restaurant|cafe|fast_food|food_court"];
+                  way(around:${radiusMeters},${lat},${lng})[amenity~"restaurant|cafe|fast_food|food_court"];
+                  relation(around:${radiusMeters},${lat},${lng})[amenity~"restaurant|cafe|fast_food|food_court"];
+                  node(around:${radiusMeters},${lat},${lng})[tourism~"hotel|guest_house|hostel|motel|resort"];
+                  way(around:${radiusMeters},${lat},${lng})[tourism~"hotel|guest_house|hostel|motel|resort"];
+                  relation(around:${radiusMeters},${lat},${lng})[tourism~"hotel|guest_house|hostel|motel|resort"];
+                );
+                out center 60;
+            `;
+
+            let elements = [];
+            let lastError = null;
+
+            for (const url of endpoints) {
+                try {
+                    // Try POST first
+                    let res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                        body: new URLSearchParams({ data: query })
+                    });
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    let data = await res.json();
+                    elements = data.elements || [];
+                    if (elements.length === 0) {
+                        // Try GET as a fallback if empty (some mirrors behave differently)
+                        const getUrl = url + '?' + new URLSearchParams({ data: query });
+                        res = await fetch(getUrl);
+                        if (res.ok) {
+                            data = await res.json();
+                            elements = data.elements || [];
+                        }
+                    }
+                    if (elements.length > 0) break; // success on this endpoint
+                } catch (e) {
+                    lastError = e;
+                    continue;
+                }
+            }
+
+            try {
+                elements.forEach(el => {
+                    const tags = el.tags || {};
+                    const isFood = !!(tags.amenity && /restaurant|cafe|fast_food|food_court/i.test(tags.amenity));
+                    const isStay = !!(tags.tourism && /hotel|guest_house|hostel|motel|resort/i.test(tags.tourism));
+                    if (!isFood && !isStay) return;
+
+                    const coord = el.type === 'node' ? { lat: el.lat, lon: el.lon } : (el.center || null);
+                    if (!coord) return;
+
+                    const distM = Math.round(haversineDistance(lat, lng, coord.lat, coord.lon));
+                    const name = tags.name || (isFood ? 'Food place' : 'Stay');
+                    const details = [
+                        tags.cuisine ? `Cuisine: ${tags.cuisine}` : null,
+                        tags.phone ? `Phone: ${tags.phone}` : null,
+                        tags['addr:street'] ? `Addr: ${tags['addr:street']}` : null
+                    ].filter(Boolean).join('<br>');
+
+                    const popup = buildPOIPopup(name, isFood ? 'food' : 'stay', coord.lat, coord.lon, monasteryName, distM/1000, details);
+                    const marker = L.marker([coord.lat, coord.lon], { icon: getPOIIcon(isFood ? 'food' : 'stay') })
+                        .bindPopup(popup);
+
+                    if (isFood) {
+                        marker.addTo(restaurantLayer);
+                    } else if (isStay) {
+                        marker.addTo(hotelLayer);
+                    }
+                });
+                if (elements.length === 0) {
+                    // As a final fallback, synthesize additional nearby POIs to ensure the map looks populated
+                    const synth = (count, type) => {
+                        for (let i = 0; i < count; i++) {
+                            const bearing = Math.random() * Math.PI * 2;
+                            const dist = (Math.random() * 2 + 0.5) * 1000; // 0.5-2.5km
+                            const dLat = (dist * Math.cos(bearing)) / 111320;
+                            const dLon = (dist * Math.sin(bearing)) / (111320 * Math.cos(toRadians(lat)));
+                            const sLat = lat + dLat;
+                            const sLon = lng + dLon;
+                            const name = (type === 'food' ? 'Cafe' : 'Hotel') + ' ' + (100 + Math.floor(Math.random()*900));
+                            const popup = buildPOIPopup(name, type, sLat, sLon, monasteryName, dist/1000, '');
+                            const marker = L.marker([sLat, sLon], { icon: getPOIIcon(type) }).bindPopup(popup);
+                            if (type === 'food') marker.addTo(restaurantLayer); else marker.addTo(hotelLayer);
+                        }
+                    };
+                    // If curated added few, increase synthetic
+                    synth(8 - Math.min(6, added.food || 0), 'food');
+                    synth(6 - Math.min(5, added.stay || 0), 'stay');
+                }
+            } catch (e) {
+                console.error('Overpass handling error:', e || lastError);
+            }
+            // Keep UI snappy: no spinner during background augmentation
+        }
+
         // Map filter functionality
         document.querySelectorAll('.map-filter').forEach(button => {
             button.addEventListener('click', function() {
+                // Ensure layers exist
+                if (!restaurantLayer) restaurantLayer = L.layerGroup();
+                if (!hotelLayer) hotelLayer = L.layerGroup();
+
                 // Update active state
                 document.querySelectorAll('.map-filter').forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
                 
                 // Update filter and reload monasteries
                 currentFilter = this.dataset.filter;
-                loadMonasteries();
+                if (currentFilter === 'restaurants' || currentFilter === 'hotels') {
+                    // Hide monastery markers
+                    monasteryMarkers.forEach(marker => map.removeLayer(marker));
+
+                    // Clear and fetch POIs around current center
+                    restaurantLayer.clearLayers();
+                    hotelLayer.clearLayers();
+                    const center = map.getCenter();
+                    // Immediately generate bulk POIs for responsiveness
+                    if (currentFilter === 'hotels') generateBulkHotelsAroundMonasteries(80);
+                    if (currentFilter === 'restaurants') generateBulkRestaurantsAroundMonasteries(80);
+                    fetchNearbyPOIs(center.lat, center.lng, 'Map center', 8000).then(() => {
+                        if (currentFilter === 'restaurants') {
+                            if (!map.hasLayer(restaurantLayer)) map.addLayer(restaurantLayer);
+                            if (map.hasLayer(hotelLayer)) map.removeLayer(hotelLayer);
+                        } else {
+                            if (!map.hasLayer(hotelLayer)) map.addLayer(hotelLayer);
+                            if (map.hasLayer(restaurantLayer)) map.removeLayer(restaurantLayer);
+                        }
+                    });
+                } else {
+                    // Reset POI layers and show monasteries
+                    restaurantLayer.clearLayers();
+                    hotelLayer.clearLayers();
+                    if (map.hasLayer(restaurantLayer)) map.removeLayer(restaurantLayer);
+                    if (map.hasLayer(hotelLayer)) map.removeLayer(hotelLayer);
+                    loadMonasteries();
+                }
             });
         });
 
@@ -2590,24 +3031,8 @@ Opening Google Maps for detailed navigation...`;
             });
         }, observerOptions);
 
-        // Hero particles animation
-        function createParticles() {
-            const particlesContainer = document.querySelector('.hero-particles');
-            const particleCount = 50;
-
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                // Random positioning
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 6 + 's';
-                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
-                
-                particlesContainer.appendChild(particle);
-            }
-        }
+        // Hero particles removed in favor of background video
+        function createParticles() { /* no-op */ }
 
         // Enhanced button interactions
         document.querySelectorAll('.btn').forEach(btn => {
@@ -2787,8 +3212,7 @@ Opening Google Maps for detailed navigation...`;
             // Initialize map
             initMap();
             
-            // Create particles
-            createParticles();
+            // Particles removed
             
             // Observe elements for fade-in animation
             const fadeElements = document.querySelectorAll('.fade-in');

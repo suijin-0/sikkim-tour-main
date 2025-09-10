@@ -1,10 +1,15 @@
 from flask import Flask, request, Response, jsonify
+from flask import send_from_directory
 from flask_cors import CORS
 import requests
 import json
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
+
+@app.route('/')
+def serve_index():
+    return app.send_static_file('index.html')
 
 @app.route('/chat', methods=['POST'])
 def chat():
