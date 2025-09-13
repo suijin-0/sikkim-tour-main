@@ -160,12 +160,12 @@
         .mega-menu.open { display: grid; }
         @media (min-width: 769px) { .mega-parent:hover .mega-menu { display: grid; } }
         .mega-menu {
-            grid-template-columns: 1.2fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
         }
         .mega-col h4 { color: var(--secondary-blue); margin-bottom: 0.8rem; font-size: 1rem; }
         .mega-links { display: grid; gap: 0.4rem; }
         .mega-links a { color: var(--text-dark); text-decoration: none; padding: 0.4rem 0.6rem; border-radius: 8px; }
-        .mega-links a:hover { background: rgba(212, 175, 55, 0.12); color: var(--primary-gold-dark); }
+        .mega-links a:hover { background: transparent; color: var(--text-dark); }
         .mega-card {
             background: var(--bg-light);
             border: 1px solid rgba(212, 175, 55, 0.12);
@@ -206,6 +206,11 @@
             visibility: hidden;
             transform: translateY(20px) scale(0.9);
             transition: all 0.3s ease;
+            max-width: calc(100vw - 40px);
+            max-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .ai-chat-overlay.open {
@@ -217,11 +222,13 @@
         .ai-chat-header {
             background: var(--gradient-primary);
             color: white;
-            padding: 1rem 1.5rem;
+            padding: 0.8rem 1.2rem;
             border-radius: 20px 20px 0 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-shrink: 0;
+            min-height: 60px;
         }
 
         .ai-chat-title {
@@ -248,12 +255,13 @@
         }
 
         .ai-chat-messages {
-            height: 450px;
+            flex: 1;
             overflow-y: auto;
             padding: 1rem;
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            min-height: 0;
         }
 
         .ai-message {
@@ -274,13 +282,17 @@
         }
 
         .ai-chat-input {
-            padding: 1rem 1.5rem;
+            padding: 0.8rem 1.2rem;
             border-top: 1px solid rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 0 0 20px 20px;
         }
 
         .ai-chat-form {
             display: flex;
             gap: 0.5rem;
+            align-items: center;
         }
 
         .ai-chat-input-field {
@@ -290,6 +302,8 @@
             border-radius: 25px;
             outline: none;
             font-size: 0.9rem;
+            min-height: 44px;
+            box-sizing: border-box;
         }
 
         .ai-chat-input-field:focus {
@@ -300,14 +314,52 @@
             background: var(--gradient-primary);
             color: white;
             border: none;
-            padding: 0.75rem 1rem;
+            padding: 0.75rem;
             border-radius: 50%;
             cursor: pointer;
             transition: all 0.3s ease;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .ai-chat-send:hover {
             transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .ai-chat-send:active {
+            transform: scale(0.95);
+        }
+        
+        .ai-chat-send:focus {
+            outline: 2px solid var(--primary-gold);
+            outline-offset: 2px;
+        }
+        
+        .ai-chat-send:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .ai-chat-input-field:focus {
+            outline: 2px solid var(--primary-gold);
+            outline-offset: 2px;
+        }
+        
+        .ai-chat-close:focus {
+            outline: 2px solid rgba(255, 255, 255, 0.8);
+            outline-offset: 2px;
+        }
+        
+        .ai-chat-close {
+            min-width: 44px;
+            min-height: 44px;
         }
 
         .search-overlay {
@@ -361,6 +413,8 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
+            margin-bottom: 4rem; /* ensure clear space before next section */
+            isolation: isolate; /* prevent blending with following sections */
         }
 
         /* Background video styling */
@@ -383,8 +437,9 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 100%);
+            background: none; /* remove light tint over video */
             z-index: 1;
+            pointer-events: none;
         }
 
         
@@ -488,7 +543,18 @@
         }
 
         .btn-primary:active {
-            transform: translateY(0);
+            transform: translateY(0) scale(0.98);
+            transition: transform 0.1s ease;
+        }
+
+        .btn-primary.clicked {
+            animation: buttonClick 0.3s ease;
+        }
+
+        @keyframes buttonClick {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
         }
 
         .btn-secondary {
@@ -507,11 +573,13 @@
         .section {
             padding: 6rem 2rem;
             position: relative;
+            scroll-margin-top: 80px; /* better anchor scroll positioning below fixed nav */
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            padding: 0 1.25rem;
         }
 
         .section-header {
@@ -535,44 +603,248 @@
             margin: 0 auto;
         }
 
-        /* Stats Section */
+        /* Stats Section - Professional Design */
         .stats {
-            background: var(--white);
-            padding: 4rem 2rem;
-            margin-top: -100px;
+            /* Fallback neutral background */
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 6rem 2rem;
+            margin-top: 0; /* lowered top offset to avoid overlap */
             position: relative;
             z-index: 10;
         }
 
+        /* Stats visible: soft on-brand background that blends with the interface */
+        .stats.visible {
+            background: transparent; /* move heavy image to pseudo for smoother scroll */
+            position: relative; /* ensure stacking context above body background */
+            z-index: 1;
+            border: 8px solid transparent;
+            background-clip: padding-box;
+        }
+
+        /* Traditional Sikkim Frame Border for Stats Section */
+        .stats.visible::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            background: 
+                /* Outer golden border */
+                linear-gradient(45deg, #d4af37, #ffd700, #ff6b35, #d4af37, #ffd700, #ff6b35, #d4af37, #ffd700),
+                /* Inner decorative pattern */
+                repeating-linear-gradient(
+                    45deg,
+                    transparent 0px,
+                    transparent 10px,
+                    #ff6b35 10px,
+                    #ff6b35 12px,
+                    transparent 12px,
+                    transparent 22px,
+                    #d4af37 22px,
+                    #d4af37 24px
+                ),
+                /* Corner decorations */
+                radial-gradient(circle at 0% 0%, #d4af37 15px, transparent 15px),
+                radial-gradient(circle at 100% 0%, #ff6b35 15px, transparent 15px),
+                radial-gradient(circle at 0% 100%, #ffd700 15px, transparent 15px),
+                radial-gradient(circle at 100% 100%, #d4af37 15px, transparent 15px);
+            background-size: 100% 100%, 20px 20px, 30px 30px, 30px 30px, 30px 30px, 30px 30px;
+            background-position: 0 0, 0 0, 0 0, 100% 0, 0 100%, 100% 100%;
+            background-repeat: no-repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+            border-radius: 25px;
+            z-index: -1;
+            animation: sikkimFrameGlow 3s ease-in-out infinite alternate;
+        }
+
+        .stats.visible::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 0; /* above body background, below content */
+            background:
+                linear-gradient(135deg, rgba(0,0,0,0.35), rgba(0,0,0,0.2)),
+                url('22-rumtek1.jpg');
+            background-position: center top;
+            background-repeat: no-repeat;
+            background-size: cover;
+            pointer-events: none;
+        }
+
+        /* Container styling inside stats for blended card-like effect */
+        .stats.visible > .container {
+            background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.85));
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            padding: 3rem 2rem;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Decorative Sikkim Art Border */
+        .stats.visible > .container::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            background: linear-gradient(45deg, 
+                #d4af37 0%, 
+                #ffd700 15%, 
+                #ff6b35 30%, 
+                #d4af37 45%, 
+                #ffd700 60%, 
+                #ff6b35 75%, 
+                #d4af37 90%, 
+                #ffd700 100%);
+            border-radius: 23px;
+            z-index: -1;
+            animation: sikkimBorderGlow 4s ease-in-out infinite alternate;
+        }
+
+        /* Container styling inside stats for blended card-like effect */
+        .stats.visible > .container {
+            background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.85));
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            padding: 3rem 2rem;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes sikkimFrameGlow {
+            0% {
+                box-shadow: 
+                    0 0 20px rgba(212, 175, 55, 0.5),
+                    inset 0 0 20px rgba(255, 107, 53, 0.3);
+            }
+            100% {
+                box-shadow: 
+                    0 0 30px rgba(255, 107, 53, 0.6),
+                    inset 0 0 30px rgba(212, 175, 55, 0.4);
+            }
+        }
+
+
+        /* Animated border glow effect */
+        @keyframes sikkimBorderGlow {
+            0% {
+                box-shadow: 
+                    0 0 20px rgba(212, 175, 55, 0.3),
+                    0 0 40px rgba(255, 107, 53, 0.2),
+                    inset 0 0 20px rgba(255, 215, 0, 0.1);
+            }
+            100% {
+                box-shadow: 
+                    0 0 30px rgba(255, 107, 53, 0.4),
+                    0 0 50px rgba(212, 175, 55, 0.3),
+                    inset 0 0 30px rgba(255, 215, 0, 0.2);
+            }
+        }
+
+
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            background: white;
-            padding: 3rem;
-            border-radius: 20px;
-            box-shadow: var(--shadow-heavy);
-            border: 1px solid rgba(212, 175, 55, 0.1);
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4rem;
+            background: #ffffff;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(212, 175, 55, 0.02) 0%, transparent 50%);
+            padding: 5rem 4rem;
+            border-radius: 0;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stats-grid::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #1a1a1a, #d4af37, #1a1a1a);
+        }
+
+        .stats-grid::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e0e0e0, transparent);
         }
 
         .stat-item {
             text-align: center;
-            padding: 1rem;
+            padding: 0;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-item:hover {
+            transform: translateY(-8px);
+        }
+
+        .stat-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 60px;
+            background: linear-gradient(180deg, transparent, #d4af37, transparent);
         }
 
         .stat-number {
-            font-size: 3.5rem;
-            font-weight: 800;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
+            font-size: 4.5rem;
+            font-weight: 300;
+            color: #1a1a1a;
+            margin-bottom: 1.5rem;
+            padding: 0;
+            border: none;
+            background: none;
+            box-shadow: none;
+            position: relative;
+            font-family: 'Arial', sans-serif;
+            letter-spacing: -2px;
+        }
+
+        .stat-number::before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #d4af37, transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-item:hover .stat-number::before {
+            opacity: 1;
         }
 
         .stat-label {
-            color: var(--text-light);
-            font-weight: 500;
-            font-size: 1.1rem;
+            color: #666;
+            font-weight: 400;
+            font-size: 1rem;
+            text-transform: none;
+            letter-spacing: 0.5px;
+            margin-top: 0;
+            line-height: 1.4;
         }
 
         /* Features Grid */
@@ -974,36 +1246,208 @@
         }
 
         .archive-category {
-            background: var(--bg-light);
+            background: #ffffff;
             padding: 2rem;
             border-radius: 16px;
             text-align: center;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(212, 175, 55, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        /* Archive card styling */
+
+        /* Archive image styling */
+        .archive-image {
+            margin: 2rem 0 1.5rem 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .archive-image img {
+            width: 150px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Individual card colors with soft pastels */
+        .archive-category:nth-child(1) {
+            background: linear-gradient(135deg, #FFF5F0 0%, #FFE4D6 100%);
+            border-color: #FFB366;
+        }
+
+        .archive-category:nth-child(2) {
+            background: linear-gradient(135deg, #F0F8FF 0%, #E6F3FF 100%);
+            border-color: #87CEEB;
+        }
+
+        .archive-category:nth-child(3) {
+            background: linear-gradient(135deg, #F5F0FF 0%, #E6D7FF 100%);
+            border-color: #DDA0DD;
+        }
+
+        .archive-category:nth-child(4) {
+            background: linear-gradient(135deg, #F0FFFF 0%, #E0FFFF 100%);
+            border-color: #AFEEEE;
         }
 
         .archive-category:hover {
-            background: white;
-            box-shadow: var(--shadow-light);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            cursor: pointer;
+        }
+
+        .archive-category:hover .archive-icon {
+            transform: scale(1.1);
+        }
+
+        /* Archive hover carousel */
+        .archive-carousel {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.05);
+            padding: 1rem;
+            border-radius: 16px;
+            z-index: 10;
+        }
+
+        .archive-category.show-carousel .archive-carousel { 
+            display: flex; 
+        }
+        
+        .archive-category.show-carousel .archive-image,
+        .archive-category.show-carousel .archive-title,
+        .archive-category.show-carousel .archive-description { 
+            opacity: 0; 
+            visibility: hidden; 
+        }
+
+        .archive-carousel img {
+            max-width: 100%;
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            background: #f7f7f7;
+            margin-top: -20px;
+        }
+
+        .archive-carousel img:hover { 
+            transform: scale(1.02); 
+        }
+
+        /* Modal for enlarged image */
+        .archive-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .archive-modal.open { 
+            display: flex;
+            opacity: 1;
+        }
+
+        .archive-modal-content {
+            background: #fff;
+            border-radius: 12px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            width: 80vw; /* Wider modal content */
+        }
+
+        .archive-modal-content img {
+            display: block;
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            background: #000;
+            width: 100%; /* Full width of modal content */
+            height: auto; /* Maintain aspect ratio */
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        
+        .archive-modal.open .archive-modal-content img {
+            transform: scale(1);
+        }
+
+        .archive-modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            z-index: 1010;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .archive-modal-close:hover {
+            background: rgba(0,0,0,0.9);
+            transform: scale(1.1);
         }
 
         .archive-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
             background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            transition: all 0.3s ease;
+            display: block;
         }
 
         .archive-title {
-            font-size: 1.3rem;
-            font-weight: 600;
+            font-size: 1.5rem;
+            font-weight: 700;
             margin-bottom: 1rem;
+            color: #1f2937;
+            line-height: 1.3;
         }
 
-        .archive-count {
-            color: var(--text-light);
+        .archive-description {
+            color: #4b5563;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            margin: 0;
+            text-align: left;
         }
+
+        
 
         /* Tours Section */
         .tours {
@@ -1179,6 +1623,14 @@
             transform: translateY(0);
         }
 
+        /* Large screen optimization */
+        @media (min-width: 1200px) {
+            .ai-chat-overlay {
+                width: 450px;
+                height: 650px;
+            }
+        }
+        
         /* Responsive Design */
         @media (max-width: 768px) {
             .nav-menu { display: none; }
@@ -1191,7 +1643,14 @@
             .section { padding: 4rem 1rem; }
             .section-title { font-size: 2.2rem; }
             
-            .stats-grid { grid-template-columns: repeat(2, 1fr); padding: 2rem; }
+            .stats-grid { 
+                grid-template-columns: 1fr; 
+                gap: 3rem; 
+                padding: 3rem 2rem; 
+            }
+            .stat-item:not(:last-child)::after { 
+                display: none; 
+            }
             .features-grid { grid-template-columns: 1fr; }
             .monastery-grid { grid-template-columns: 1fr; }
             .tour-grid { grid-template-columns: 1fr; }
@@ -1199,13 +1658,83 @@
             
             .map-controls { flex-direction: column; }
             .map-container { height: 400px; }
+            
+            /* AI Chat Box Mobile Optimization */
+            .ai-chat-overlay {
+                bottom: 15px;
+                right: 15px;
+                left: 15px;
+                width: auto;
+                height: 70vh;
+                max-height: 500px;
+                border-radius: 15px;
+            }
+            
+            .ai-chat-header {
+                padding: 0.7rem 1rem;
+                min-height: 50px;
+            }
+            
+            .ai-chat-input {
+                padding: 0.7rem 1rem;
+            }
+            
+            .ai-chat-input-field {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
         }
 
         @media (max-width: 480px) {
             .nav-container { padding: 1rem; }
             .hero h1 { font-size: 2.2rem; }
             .btn { padding: 0.8rem 1.5rem; font-size: 0.9rem; }
-            .stats-grid { grid-template-columns: 1fr; }
+            .stats-grid { 
+                grid-template-columns: 1fr; 
+                gap: 2rem; 
+                padding: 2rem 1.5rem; 
+            }
+            .stat-number { font-size: 3.5rem; }
+            
+            /* AI Chat Box Small Mobile Optimization */
+            .ai-chat-overlay {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                height: 75vh;
+                max-height: 450px;
+                border-radius: 12px;
+            }
+            
+            .ai-chat-header {
+                padding: 0.6rem 0.8rem;
+                border-radius: 12px 12px 0 0;
+                min-height: 45px;
+            }
+            
+            .ai-chat-title {
+                font-size: 1rem;
+            }
+            
+            .ai-chat-messages {
+                padding: 0.8rem;
+            }
+            
+            .ai-chat-input {
+                padding: 0.6rem 0.8rem;
+                border-radius: 0 0 12px 12px;
+            }
+            
+            .ai-chat-input-field {
+                padding: 0.6rem 0.8rem;
+                font-size: 16px;
+            }
+            
+            .ai-chat-send {
+                padding: 0.6rem;
+                min-width: 44px;
+                min-height: 44px;
+                font-size: 0.9rem;
+            }
         }
 
         /* Enhanced Leaflet popup styles */
@@ -1483,16 +2012,6 @@
                                 <a href="#archive"><i class="fas fa-scroll"></i> Manuscripts</a>
                             </div>
                         </div>
-                        <div class="mega-col">
-                            <div class="mega-card">
-                                <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.6rem;">
-                                    <i class="fas fa-star"></i>
-                                    <strong>Highlights</strong>
-                                </div>
-                                <p style="color: var(--text-light);">Top monasteries, VR tours, and curated heritage routes to get you started.</p>
-                                <a href="#tours" class="btn btn-primary btn-small" style="margin-top:0.5rem;">Start Exploring</a>
-                            </div>
-                        </div>
                     </div>
                 </li>
             </ul>
@@ -1659,7 +2178,7 @@
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title playfair">Interactive Monastery Map</h2>
-                <p class="section-subtitle">Discover monasteries across Sikkim with our interactive map featuring real-time information and tourist-friendly navigation</p>
+                <p class="section-subtitle" style="color: #000000;">Discover monasteries across Sikkim with our interactive map featuring real-time information and tourist-friendly navigation</p>
             </div>
             
             <div class="map-controls">
@@ -1678,12 +2197,57 @@
                 <button class="map-filter" data-filter="accessible">
                     <i class="fas fa-car"></i> Road Accessible
                 </button>
-                <button class="map-filter" data-filter="ancient">
-                    <i class="fas fa-history"></i> Ancient (>500 years)
+                <button class="map-filter" data-filter="hospitality">
+                    <i class="fas fa-hotel"></i> Hotels & Restaurants
                 </button>
             </div>
             
             <div class="map-container" id="monastery-map"></div>
+            
+            <!-- Map Legend -->
+            <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem; flex-wrap: wrap;">
+                <!-- Monastery Regions Legend -->
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-light); flex: 1; min-width: 300px;">
+                    <h4 style="color: var(--primary-gold); margin: 0 0 1rem 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-temple-buddhist"></i> Monastery Regions
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem;">
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <div style="width: 20px; height: 20px; background-color: #e74c3c; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>
+                            <span style="font-size: 0.9rem; color: #333;">East Sikkim</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <div style="width: 20px; height: 20px; background-color: #3498db; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>
+                            <span style="font-size: 0.9rem; color: #333;">West Sikkim</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <div style="width: 20px; height: 20px; background-color: #f39c12; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>
+                            <span style="font-size: 0.9rem; color: #333;">South Sikkim</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <div style="width: 20px; height: 20px; background-color: #9b59b6; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>
+                            <span style="font-size: 0.9rem; color: #333;">North Sikkim</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hospitality Legend -->
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-light); flex: 1; min-width: 300px;">
+                    <h4 style="color: var(--primary-gold); margin: 0 0 1rem 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-hotel"></i> Hospitality
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem;">
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <div style="width: 20px; height: 20px; background-color: #dc3545; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;"><i class="fas fa-home"></i></div>
+                            <span style="font-size: 0.9rem; color: #333;">Hotels & Restaurants</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <div style="width: 20px; height: 20px; background-color: #dc3545; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;"><i class="fas fa-home"></i></div>
+                            <span style="font-size: 0.9rem; color: #333;">Homestays</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div style="margin-top: 2rem; text-align: center;">
                 <p style="color: var(--text-light);">
@@ -1839,62 +2403,44 @@
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title playfair">Digital Archive</h2>
-                <p class="section-subtitle">Preserving millennia of Buddhist wisdom through advanced digitization and scholarly research</p>
+                <p class="section-subtitle" style="color: #000000;">Preserving millennia of Buddhist wisdom through advanced digitization and scholarly research</p>
             </div>
             
             <div class="archive-categories">
-                <div class="archive-category fade-in">
-                    <div class="archive-icon">
-                        <i class="fas fa-scroll"></i>
+                <div class="archive-category fade-in" data-images='["digital_archive_assets/manuscripts/m1.jpg", "digital_archive_assets/manuscripts/m2.jpg", "digital_archive_assets/manuscripts/m3.jpg", "digital_archive_assets/manuscripts/m4.jpg", "digital_archive_assets/manuscripts/m5.jpg"]'>
+                    <div class="archive-image">
+                        <img src="am.png" alt="Ancient Manuscript" />
                     </div>
                     <h3 class="archive-title">Ancient Manuscripts</h3>
-                    <p class="archive-count">2,847 documents digitized</p>
-                    <p>Tibetan texts, Sanskrit palm-leaf manuscripts, and Sikkimese historical records dating back to the 8th century.</p>
+                    <p class="archive-description">Tibetan texts, Sanskrit palm-leaf manuscripts, and Sikkimese historical records dating back to the 8th century.</p>
+                    <div class="archive-carousel"></div>
                 </div>
                 
-                <div class="archive-category fade-in">
-                    <div class="archive-icon">
-                        <i class="fas fa-camera"></i>
+                <div class="archive-category fade-in" data-images='["digital_archive_assets/historical/h1.JPG", "digital_archive_assets/historical/h2.jpg", "digital_archive_assets/historical/h3.jpg", "digital_archive_assets/historical/h4.jpg", "digital_archive_assets/historical/h5.jpg"]'>
+                    <div class="archive-image">
+                        <img src="hp.jpeg" alt="Historical Photograph" />
                     </div>
                     <h3 class="archive-title">Historical Photographs</h3>
-                    <p class="archive-count">5,692 images archived</p>
-                    <p>Rare photographs from British colonial period, royal ceremonies, and monastic life spanning 150+ years.</p>
+                    <p class="archive-description">Rare photographs from British colonial period, royal ceremonies, and monastic life spanning 150+ years.</p>
+                    <div class="archive-carousel"></div>
                 </div>
                 
-                <div class="archive-category fade-in">
-                    <div class="archive-icon">
-                        <i class="fas fa-paint-brush"></i>
+                <div class="archive-category fade-in" data-images='["digital_archive_assets/Sacred_art/1.jpg", "digital_archive_assets/Sacred_art/2.jpg", "digital_archive_assets/Sacred_art/3.jpg", "digital_archive_assets/Sacred_art/4.jpg", "digital_archive_assets/Sacred_art/5.jpg"]'>
+                    <div class="archive-image">
+                        <img src="sac.jpeg" alt="Sacred Art" />
                     </div>
                     <h3 class="archive-title">Sacred Art Collection</h3>
-                    <p class="archive-count">3,429 artworks documented</p>
-                    <p>Thangkas, murals, sculptures, and ritual objects with detailed iconographic analysis and cultural context.</p>
+                    <p class="archive-description">Thangkas, murals, sculptures, and ritual objects with detailed iconographic analysis and cultural context.</p>
+                    <div class="archive-carousel"></div>
                 </div>
                 
-                <div class="archive-category fade-in">
-                    <div class="archive-icon">
-                        <i class="fas fa-microphone"></i>
-                    </div>
-                    <h3 class="archive-title">Oral Traditions</h3>
-                    <p class="archive-count">1,283 recordings preserved</p>
-                    <p>Elder monks sharing stories, chants, ritual instructions, and historical accounts in multiple languages.</p>
-                </div>
-                
-                <div class="archive-category fade-in">
-                    <div class="archive-icon">
-                        <i class="fas fa-book"></i>
-                    </div>
-                    <h3 class="archive-title">Research Papers</h3>
-                    <p class="archive-count">892 scholarly works</p>
-                    <p>Academic research on Buddhism, anthropology, architecture, and cultural studies by international scholars.</p>
-                </div>
-                
-                <div class="archive-category fade-in">
-                    <div class="archive-icon">
-                        <i class="fas fa-map"></i>
+                <div class="archive-category fade-in" data-images='["digital_archive_assets/his_maps/ma1.jpg", "digital_archive_assets/his_maps/ma2.jpg", "digital_archive_assets/his_maps/ma3.jpg", "digital_archive_assets/his_maps/ma4.jpg", "digital_archive_assets/his_maps/ma5.jpg"]'>
+                    <div class="archive-image">
+                        <img src="hm.jpeg" alt="Historical Map" />
                     </div>
                     <h3 class="archive-title">Historical Maps</h3>
-                    <p class="archive-count">456 maps digitized</p>
-                    <p>Ancient trade routes, pilgrimage paths, territorial boundaries, and monastery foundation records.</p>
+                    <p class="archive-description">Ancient trade routes, pilgrimage paths, territorial boundaries, and monastery foundation records.</p>
+                    <div class="archive-carousel"></div>
                 </div>
             </div>
             
@@ -2195,6 +2741,8 @@
                 lat: 27.3389,
                 lng: 88.5500,
                 sect: "kagyu",
+                region: "East Sikkim",
+                regionColor: "#e74c3c",
                 founded: 1966,
                 accessible: true,
                 description: "The Dharma Chakra Centre, seat of the Gyalwa Karmapa",
@@ -2213,6 +2761,8 @@
                 lat: 27.2951,
                 lng: 88.2183,
                 sect: "nyingma",
+                region: "West Sikkim",
+                regionColor: "#3498db",
                 founded: 1705,
                 accessible: true,
                 description: "One of Sikkim's oldest and most important Nyingma monasteries",
@@ -2231,6 +2781,8 @@
                 lat: 27.3314,
                 lng: 88.6138,
                 sect: "nyingma",
+                region: "East Sikkim",
+                regionColor: "#e74c3c",
                 founded: 1909,
                 accessible: true,
                 description: "Famous for annual Cham dance during Pang Lhabsol festival",
@@ -2249,6 +2801,8 @@
                 lat: 27.3167,
                 lng: 88.2667,
                 sect: "nyingma",
+                region: "West Sikkim",
+                regionColor: "#3498db",
                 founded: 1717,
                 accessible: false,
                 description: "Sacred Nyingma monastery blessed by Guru Rinpoche",
@@ -2267,6 +2821,8 @@
                 lat: 27.3389,
                 lng: 88.6083,
                 sect: "royal",
+                region: "East Sikkim",
+                regionColor: "#e74c3c",
                 founded: 1814,
                 accessible: true,
                 description: "The royal monastery of Sikkim with coronation throne",
@@ -2285,6 +2841,8 @@
                 lat: 27.3700,
                 lng: 88.5900,
                 sect: "kagyu",
+                region: "East Sikkim",
+                regionColor: "#e74c3c",
                 founded: 1721,
                 accessible: false,
                 description: "Ancient Kagyu monastery with meditation caves",
@@ -2303,6 +2861,8 @@
                 lat: 27.2833,
                 lng: 88.5167,
                 sect: "kagyu",
+                region: "South Sikkim",
+                regionColor: "#f39c12",
                 founded: 1768,
                 accessible: true,
                 description: "Important Kagyu monastery with beautiful architecture",
@@ -2321,6 +2881,8 @@
                 lat: 27.2889,
                 lng: 88.2111,
                 sect: "nyingma",
+                region: "West Sikkim",
+                regionColor: "#3498db",
                 founded: 1701,
                 accessible: false,
                 description: "First monastery built in Sikkim",
@@ -2339,6 +2901,8 @@
                 lat: 27.4833,
                 lng: 88.5833,
                 sect: "nyingma",
+                region: "North Sikkim",
+                regionColor: "#9b59b6",
                 founded: 1697,
                 accessible: false,
                 description: "Remote monastery in North Sikkim",
@@ -2357,6 +2921,8 @@
                 lat: 27.3333,
                 lng: 88.6167,
                 sect: "gelug",
+                region: "East Sikkim",
+                regionColor: "#e74c3c",
                 founded: 1894,
                 accessible: true,
                 description: "Royal chapel within Tsuklakhang complex",
@@ -2372,10 +2938,955 @@
             }
         ];
 
+        // Hospitality data: hotels, homestays, restaurants (expanded dataset with reviews)
+        const hospitalityData = [
+            // Hotels in Gangtok
+            {
+                name: "Taj Guras Kutir Resort & Spa",
+                type: "Hotel",
+                rating: 4.7,
+                lat: 27.3265,
+                lng: 88.6114,
+                address: "Penchal Rd, Gangtok",
+                phone: "+91-3592-XXXXXX",
+                reviews: ["Excellent service and mountain views", "Luxury stay with traditional Sikkimese architecture", "Perfect for families"]
+            },
+            {
+                name: "The Elgin Nor-Khill",
+                type: "Hotel",
+                rating: 4.6,
+                lat: 27.3312,
+                lng: 88.6127,
+                address: "Paljor Stadium Rd, Gangtok",
+                phone: "+91-3592-XXXXXX",
+                reviews: ["Historic palace converted to hotel", "Authentic Sikkimese experience", "Great location in city center"]
+            },
+            {
+                name: "Hotel Tibet",
+                type: "Hotel",
+                rating: 4.4,
+                lat: 27.3257,
+                lng: 88.6123,
+                address: "MG Marg, Gangtok",
+                phone: "+91-3592-XXXXXX",
+                reviews: ["Clean rooms with mountain views", "Friendly staff", "Good value for money"]
+            },
+            {
+                name: "Mayfair Spa Resort",
+                type: "Hotel",
+                rating: 4.8,
+                lat: 27.3200,
+                lng: 88.6100,
+                address: "Ranipool, Gangtok",
+                phone: "+91-3592-XXXXXX",
+                reviews: ["Luxury spa treatments", "Breathtaking Kanchenjunga views", "World-class amenities"]
+            },
+            {
+                name: "Hotel Sonam Delek",
+                type: "Hotel",
+                rating: 4.3,
+                lat: 27.3350,
+                lng: 88.6150,
+                address: "Tibet Rd, Gangtok",
+                phone: "+91-3592-XXXXXX",
+                reviews: ["Traditional Tibetan architecture", "Peaceful atmosphere", "Good food"]
+            },
+            // Hotels in Pelling
+            {
+                name: "The Elgin Mount Pandim",
+                type: "Hotel",
+                rating: 4.6,
+                lat: 27.3010,
+                lng: 88.2416,
+                address: "Pelling, West Sikkim",
+                phone: "+91-3595-XXXXXX",
+                reviews: ["Stunning mountain views", "Luxury in the hills", "Excellent service"]
+            },
+            {
+                name: "Hotel Mount Pandim",
+                type: "Hotel",
+                rating: 4.2,
+                lat: 27.3050,
+                lng: 88.2450,
+                address: "Pelling, West Sikkim",
+                phone: "+91-3595-XXXXXX",
+                reviews: ["Great location near monasteries", "Clean and comfortable", "Friendly staff"]
+            },
+            // Homestays in Gangtok
+            {
+                name: "Keepsa Residency Homestay",
+                type: "Homestay",
+                rating: 4.5,
+                lat: 27.3413,
+                lng: 88.6130,
+                address: "Development Area, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Homely atmosphere", "Delicious home-cooked meals", "Local family experience"]
+            },
+            {
+                name: "Sikkim Homestay",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.3380,
+                lng: 88.6140,
+                address: "Tadong, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Authentic local experience", "Warm hospitality", "Budget-friendly"]
+            },
+            {
+                name: "Himalayan Homestay",
+                type: "Homestay",
+                rating: 4.6,
+                lat: 27.3450,
+                lng: 88.6120,
+                address: "Arithang, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Mountain views from room", "Traditional Sikkimese food", "Cultural immersion"]
+            },
+            // Homestays in Pelling
+            {
+                name: "Magellan's The Golden Bridge Homestay",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.3172,
+                lng: 88.2442,
+                address: "Pelling, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Peaceful location", "Organic garden", "Eco-friendly stay"]
+            },
+            {
+                name: "Pelling Homestay",
+                type: "Homestay",
+                rating: 4.3,
+                lat: 27.3100,
+                lng: 88.2400,
+                address: "Pelling, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Close to monasteries", "Local family", "Simple and clean"]
+            },
+            // Restaurants in Gangtok
+            {
+                name: "The Local Cafe",
+                type: "Restaurant",
+                rating: 4.5,
+                lat: 27.3312,
+                lng: 88.6127,
+                address: "Tadong, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Best momos in town", "Cozy atmosphere", "Great coffee"]
+            },
+            {
+                name: "Cafe Live & Loud",
+                type: "Restaurant",
+                rating: 4.4,
+                lat: 27.3257,
+                lng: 88.6123,
+                address: "Nam Nam Rd, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Live music venue", "Good food and drinks", "Vibrant atmosphere"]
+            },
+            {
+                name: "Taste of Tibet",
+                type: "Restaurant",
+                rating: 4.6,
+                lat: 27.3280,
+                lng: 88.6130,
+                address: "MG Marg, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Authentic Tibetan cuisine", "Thukpa and momos", "Traditional decor"]
+            },
+            {
+                name: "Gangtok Kitchen",
+                type: "Restaurant",
+                rating: 4.3,
+                lat: 27.3300,
+                lng: 88.6110,
+                address: "Lall Bazaar, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Local Sikkimese dishes", "Fresh ingredients", "Reasonable prices"]
+            },
+            {
+                name: "Momo Corner",
+                type: "Restaurant",
+                rating: 4.7,
+                lat: 27.3320,
+                lng: 88.6140,
+                address: "Tibet Rd, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Best momos in Sikkim", "Variety of fillings", "Quick service"]
+            },
+            // Additional hotels across Sikkim
+            {
+                name: "Hotel Tashi Delek",
+                type: "Hotel",
+                rating: 4.2,
+                lat: 27.3500,
+                lng: 88.6200,
+                address: "Rangpo, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Gateway to Sikkim", "Clean rooms", "Good for transit"]
+            },
+            {
+                name: "Namchi Hotel",
+                type: "Hotel",
+                rating: 4.1,
+                lat: 27.1667,
+                lng: 88.3500,
+                address: "Namchi, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["South Sikkim base", "Buddha Park nearby", "Comfortable stay"]
+            },
+            {
+                name: "Lachung Hotel",
+                type: "Hotel",
+                rating: 4.0,
+                lat: 27.6833,
+                lng: 88.7500,
+                address: "Lachung, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["High altitude stay", "Yumthang Valley access", "Basic but clean"]
+            },
+            {
+                name: "Lachen Hotel",
+                type: "Hotel",
+                rating: 4.1,
+                lat: 27.7167,
+                lng: 88.5667,
+                address: "Lachen, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Gurudongmar Lake access", "Mountain views", "Warm hospitality"]
+            },
+            // More hotels across Sikkim
+            {
+                name: "Hotel Summit Denzong",
+                type: "Hotel",
+                rating: 4.3,
+                lat: 27.3400,
+                lng: 88.6180,
+                address: "Gangtok, East Sikkim",
+                phone: "+91-3592-XXXXXX",
+                reviews: ["City center location", "Modern amenities", "Good service"]
+            },
+            {
+                name: "Hotel Royal Plaza",
+                type: "Hotel",
+                rating: 4.2,
+                lat: 27.3280,
+                lng: 88.6100,
+                address: "MG Marg, Gangtok",
+                phone: "+91-3592-XXXXXX",
+                reviews: ["Shopping district access", "Comfortable rooms", "Friendly staff"]
+            },
+            {
+                name: "Hotel Sikkim Continental",
+                type: "Hotel",
+                rating: 4.1,
+                lat: 27.3350,
+                lng: 88.6120,
+                address: "Tibet Rd, Gangtok",
+                phone: "+91-3592-XXXXXX",
+                reviews: ["Budget-friendly", "Clean accommodation", "Good location"]
+            },
+            {
+                name: "Hotel Pelling Heights",
+                type: "Hotel",
+                rating: 4.4,
+                lat: 27.3080,
+                lng: 88.2430,
+                address: "Pelling, West Sikkim",
+                phone: "+91-3595-XXXXXX",
+                reviews: ["Mountain views", "Peaceful location", "Good food"]
+            },
+            {
+                name: "Hotel Pemayangtse",
+                type: "Hotel",
+                rating: 4.0,
+                lat: 27.3020,
+                lng: 88.2400,
+                address: "Pelling, West Sikkim",
+                phone: "+91-3595-XXXXXX",
+                reviews: ["Near monastery", "Basic but clean", "Local experience"]
+            },
+            // More homestays
+            {
+                name: "Mountain View Homestay",
+                type: "Homestay",
+                rating: 4.5,
+                lat: 27.3420,
+                lng: 88.6140,
+                address: "Tadong, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Panoramic mountain views", "Traditional Sikkimese meals", "Cultural exchange"]
+            },
+            {
+                name: "Green Valley Homestay",
+                type: "Homestay",
+                rating: 4.3,
+                lat: 27.3480,
+                lng: 88.6160,
+                address: "Ranipool, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Eco-friendly stay", "Organic garden", "Peaceful environment"]
+            },
+            {
+                name: "Himalayan Heights Homestay",
+                type: "Homestay",
+                rating: 4.6,
+                lat: 27.3150,
+                lng: 88.2420,
+                address: "Pelling, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Kanchenjunga views", "Local family hospitality", "Authentic experience"]
+            },
+            {
+                name: "Valley View Homestay",
+                type: "Homestay",
+                rating: 4.2,
+                lat: 27.3200,
+                lng: 88.2450,
+                address: "Pelling, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Valley views", "Home-cooked meals", "Budget-friendly"]
+            },
+            {
+                name: "Riverside Homestay",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.3500,
+                lng: 88.6200,
+                address: "Rangpo, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Riverside location", "Fresh air", "Local culture"]
+            },
+            // More restaurants
+            {
+                name: "Himalayan Kitchen",
+                type: "Restaurant",
+                rating: 4.5,
+                lat: 27.3270,
+                lng: 88.6110,
+                address: "MG Marg, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Traditional Sikkimese cuisine", "Fresh local ingredients", "Authentic flavors"]
+            },
+            {
+                name: "Mountain Breeze Cafe",
+                type: "Restaurant",
+                rating: 4.3,
+                lat: 27.3290,
+                lng: 88.6130,
+                address: "Tibet Rd, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Cozy atmosphere", "Good coffee", "Light meals"]
+            },
+            {
+                name: "Spice Garden Restaurant",
+                type: "Restaurant",
+                rating: 4.4,
+                lat: 27.3330,
+                lng: 88.6120,
+                address: "Lall Bazaar, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Spicy local dishes", "Fresh vegetables", "Reasonable prices"]
+            },
+            {
+                name: "Buddha Cafe",
+                type: "Restaurant",
+                rating: 4.6,
+                lat: 27.3260,
+                lng: 88.6140,
+                address: "Tadong, Gangtok",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Peaceful ambiance", "Vegetarian options", "Meditation-friendly"]
+            },
+            {
+                name: "Pelling Restaurant",
+                type: "Restaurant",
+                rating: 4.2,
+                lat: 27.3060,
+                lng: 88.2440,
+                address: "Pelling, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Local specialties", "Mountain views", "Good service"]
+            },
+            {
+                name: "Kanchenjunga View Restaurant",
+                type: "Restaurant",
+                rating: 4.7,
+                lat: 27.3040,
+                lng: 88.2420,
+                address: "Pelling, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Stunning mountain views", "Fine dining", "Romantic setting"]
+            },
+            // Additional hotels and homestays across regions
+            {
+                name: "Ravangla Hotel",
+                type: "Hotel",
+                rating: 4.1,
+                lat: 27.3167,
+                lng: 88.3667,
+                address: "Ravangla, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Buddha Park access", "Mountain views", "Comfortable stay"]
+            },
+            {
+                name: "Yuksom Hotel",
+                type: "Hotel",
+                rating: 4.0,
+                lat: 27.3667,
+                lng: 88.2167,
+                address: "Yuksom, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Trekking base", "Historical significance", "Basic amenities"]
+            },
+            {
+                name: "Kaluk Hotel",
+                type: "Hotel",
+                rating: 4.2,
+                lat: 27.2500,
+                lng: 88.3000,
+                address: "Kaluk, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Off-beat location", "Peaceful stay", "Local culture"]
+            },
+            {
+                name: "Rinchenpong Homestay",
+                type: "Homestay",
+                rating: 4.5,
+                lat: 27.2833,
+                lng: 88.2333,
+                address: "Rinchenpong, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Remote location", "Authentic experience", "Mountain views"]
+            },
+            {
+                name: "Singtam Hotel",
+                type: "Hotel",
+                rating: 4.0,
+                lat: 27.2333,
+                lng: 88.5000,
+                address: "Singtam, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Transit stop", "Clean rooms", "Good food"]
+            },
+            {
+                name: "Jorethang Hotel",
+                type: "Hotel",
+                rating: 4.1,
+                lat: 27.1167,
+                lng: 88.2667,
+                address: "Jorethang, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["South Sikkim base", "Market access", "Comfortable"]
+            },
+            {
+                name: "Mangan Hotel",
+                type: "Hotel",
+                rating: 4.0,
+                lat: 27.5167,
+                lng: 88.5333,
+                address: "Mangan, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["North Sikkim gateway", "Basic facilities", "Mountain access"]
+            },
+            {
+                name: "Chungthang Hotel",
+                type: "Hotel",
+                rating: 3.9,
+                lat: 27.6167,
+                lng: 88.6500,
+                address: "Chungthang, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["High altitude", "Basic stay", "Adventure base"]
+            },
+            {
+                name: "Dzongu Homestay",
+                type: "Homestay",
+                rating: 4.6,
+                lat: 27.5500,
+                lng: 88.6000,
+                address: "Dzongu, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Lepcha culture", "Eco-tourism", "Authentic experience"]
+            },
+            {
+                name: "Lingdum Homestay",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.3667,
+                lng: 88.6500,
+                address: "Lingdum, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Monastery nearby", "Peaceful location", "Local family"]
+            },
+            {
+                name: "Temi Tea Garden Homestay",
+                type: "Homestay",
+                rating: 4.5,
+                lat: 27.2000,
+                lng: 88.3167,
+                address: "Temi, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Tea garden views", "Organic tea", "Rural experience"]
+            },
+            {
+                name: "Rumtek Homestay",
+                type: "Homestay",
+                rating: 4.3,
+                lat: 27.3167,
+                lng: 88.5833,
+                address: "Rumtek, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Monastery access", "Spiritual atmosphere", "Local hospitality"]
+            },
+            {
+                name: "Pemayangtse Homestay",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.3000,
+                lng: 88.2400,
+                address: "Pelling, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Ancient monastery nearby", "Cultural immersion", "Mountain views"]
+            },
+            {
+                name: "Tashiding Homestay",
+                type: "Homestay",
+                rating: 4.6,
+                lat: 27.2833,
+                lng: 88.2167,
+                address: "Tashiding, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Sacred site access", "Pilgrimage base", "Spiritual experience"]
+            },
+            {
+                name: "Enchey Homestay",
+                type: "Homestay",
+                rating: 4.2,
+                lat: 27.3500,
+                lng: 88.6167,
+                address: "Gangtok, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["City access", "Monastery nearby", "Convenient location"]
+            },
+            {
+                name: "Labrang Homestay",
+                type: "Homestay",
+                rating: 4.5,
+                lat: 27.3333,
+                lng: 88.6167,
+                address: "Gangtok, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Royal monastery access", "Cultural heritage", "Authentic stay"]
+            },
+            {
+                name: "Phensang Homestay",
+                type: "Homestay",
+                rating: 4.3,
+                lat: 27.3167,
+                lng: 88.6000,
+                address: "Gangtok, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Monastery views", "Peaceful environment", "Local family"]
+            },
+            {
+                name: "Sangachoeling Homestay",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.3000,
+                lng: 88.2500,
+                address: "Pelling, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Ancient monastery access", "Mountain trekking", "Cultural experience"]
+            },
+            {
+                name: "Dubdi Homestay",
+                type: "Homestay",
+                rating: 4.5,
+                lat: 27.3667,
+                lng: 88.2167,
+                address: "Yuksom, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["First monastery access", "Trekking base", "Historical significance"]
+            },
+            {
+                name: "Kartok Homestay",
+                type: "Homestay",
+                rating: 4.2,
+                lat: 27.3667,
+                lng: 88.2167,
+                address: "Yuksom, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Coronation site access", "Local culture", "Mountain views"]
+            },
+            {
+                name: "Norbugang Homestay",
+                type: "Homestay",
+                rating: 4.3,
+                lat: 27.3667,
+                lng: 88.2167,
+                address: "Yuksom, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Historical site", "Cultural heritage", "Authentic experience"]
+            },
+            {
+                name: "Tashiding Homestay 2",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.2800,
+                lng: 88.2200,
+                address: "Tashiding, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Sacred monastery", "Pilgrimage experience", "Spiritual atmosphere"]
+            },
+            {
+                name: "Ralang Homestay",
+                type: "Homestay",
+                rating: 4.5,
+                lat: 27.2500,
+                lng: 88.3000,
+                address: "Ralang, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Monastery access", "Cultural immersion", "Local hospitality"]
+            },
+            {
+                name: "Phodong Homestay",
+                type: "Homestay",
+                rating: 4.3,
+                lat: 27.5000,
+                lng: 88.5500,
+                address: "Phodong, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["North Sikkim base", "Mountain access", "Local culture"]
+            },
+            {
+                name: "Lachung Homestay",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.6833,
+                lng: 88.7500,
+                address: "Lachung, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Yumthang Valley access", "High altitude", "Mountain views"]
+            },
+            {
+                name: "Lachen Homestay",
+                type: "Homestay",
+                rating: 4.5,
+                lat: 27.7167,
+                lng: 88.5667,
+                address: "Lachen, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Gurudongmar Lake access", "Adventure base", "Local family"]
+            },
+            {
+                name: "Thangu Homestay",
+                type: "Homestay",
+                rating: 4.2,
+                lat: 27.8000,
+                lng: 88.5000,
+                address: "Thangu, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Highest settlement", "Adventure tourism", "Basic facilities"]
+            },
+            {
+                name: "Zemu Homestay",
+                type: "Homestay",
+                rating: 4.6,
+                lat: 27.7500,
+                lng: 88.6000,
+                address: "Zemu, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Glacier access", "Trekking base", "Remote location"]
+            },
+            {
+                name: "Dzongu Homestay 2",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.5500,
+                lng: 88.6000,
+                address: "Dzongu, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Lepcha culture", "Eco-tourism", "Traditional lifestyle"]
+            },
+            {
+                name: "Hee Homestay",
+                type: "Homestay",
+                rating: 4.3,
+                lat: 27.4000,
+                lng: 88.5000,
+                address: "Hee, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Off-beat location", "Local culture", "Peaceful environment"]
+            },
+            {
+                name: "Bermiok Homestay",
+                type: "Homestay",
+                rating: 4.5,
+                lat: 27.2000,
+                lng: 88.2500,
+                address: "Bermiok, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Tea garden views", "Rural experience", "Local hospitality"]
+            },
+            {
+                name: "Ravangla Homestay",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.3167,
+                lng: 88.3667,
+                address: "Ravangla, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Buddha Park access", "Mountain views", "Cultural experience"]
+            },
+            {
+                name: "Namchi Homestay",
+                type: "Homestay",
+                rating: 4.2,
+                lat: 27.1667,
+                lng: 88.3500,
+                address: "Namchi, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["South Sikkim base", "Local culture", "Comfortable stay"]
+            },
+            {
+                name: "Jorethang Homestay",
+                type: "Homestay",
+                rating: 4.1,
+                lat: 27.1167,
+                lng: 88.2667,
+                address: "Jorethang, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Market town", "Local experience", "Budget-friendly"]
+            },
+            {
+                name: "Melli Homestay",
+                type: "Homestay",
+                rating: 4.3,
+                lat: 27.1000,
+                lng: 88.2500,
+                address: "Melli, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Border town", "Local culture", "Gateway experience"]
+            },
+            {
+                name: "Rangpo Homestay",
+                type: "Homestay",
+                rating: 4.2,
+                lat: 27.1833,
+                lng: 88.5333,
+                address: "Rangpo, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Gateway to Sikkim", "Local family", "Convenient location"]
+            },
+            {
+                name: "Pakyong Homestay",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.2500,
+                lng: 88.5833,
+                address: "Pakyong, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Airport access", "Mountain views", "Local culture"]
+            },
+            {
+                name: "Rongli Homestay",
+                type: "Homestay",
+                rating: 4.3,
+                lat: 27.2000,
+                lng: 88.6667,
+                address: "Rongli, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Border area", "Adventure base", "Local experience"]
+            },
+            {
+                name: "Dikchu Homestay",
+                type: "Homestay",
+                rating: 4.5,
+                lat: 27.4167,
+                lng: 88.6000,
+                address: "Dikchu, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["River views", "Peaceful location", "Local hospitality"]
+            },
+            {
+                name: "Mangan Homestay",
+                type: "Homestay",
+                rating: 4.2,
+                lat: 27.5167,
+                lng: 88.5333,
+                address: "Mangan, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["North Sikkim base", "Mountain access", "Local culture"]
+            },
+            {
+                name: "Chungthang Homestay",
+                type: "Homestay",
+                rating: 4.1,
+                lat: 27.6167,
+                lng: 88.6500,
+                address: "Chungthang, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["High altitude", "Adventure base", "Basic facilities"]
+            },
+            {
+                name: "Lachung Homestay 2",
+                type: "Homestay",
+                rating: 4.3,
+                lat: 27.6800,
+                lng: 88.7500,
+                address: "Lachung, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Yumthang access", "Mountain views", "Local family"]
+            },
+            {
+                name: "Lachen Homestay 2",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.7200,
+                lng: 88.5700,
+                address: "Lachen, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Gurudongmar access", "Adventure base", "Local hospitality"]
+            },
+            {
+                name: "Thangu Homestay 2",
+                type: "Homestay",
+                rating: 4.0,
+                lat: 27.8000,
+                lng: 88.5000,
+                address: "Thangu, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Highest settlement", "Adventure tourism", "Basic stay"]
+            },
+            {
+                name: "Zemu Homestay 2",
+                type: "Homestay",
+                rating: 4.5,
+                lat: 27.7500,
+                lng: 88.6000,
+                address: "Zemu, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Glacier access", "Trekking base", "Remote experience"]
+            },
+            {
+                name: "Dzongu Homestay 3",
+                type: "Homestay",
+                rating: 4.6,
+                lat: 27.5500,
+                lng: 88.6000,
+                address: "Dzongu, North Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Lepcha culture", "Eco-tourism", "Traditional lifestyle"]
+            },
+            {
+                name: "Hee Homestay 2",
+                type: "Homestay",
+                rating: 4.2,
+                lat: 27.4000,
+                lng: 88.5000,
+                address: "Hee, West Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Off-beat location", "Local culture", "Peaceful stay"]
+            },
+            {
+                name: "Bermiok Homestay 2",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.2000,
+                lng: 88.2500,
+                address: "Bermiok, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Tea garden views", "Rural experience", "Local family"]
+            },
+            {
+                name: "Ravangla Homestay 2",
+                type: "Homestay",
+                rating: 4.3,
+                lat: 27.3167,
+                lng: 88.3667,
+                address: "Ravangla, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Buddha Park access", "Mountain views", "Cultural immersion"]
+            },
+            {
+                name: "Namchi Homestay 2",
+                type: "Homestay",
+                rating: 4.1,
+                lat: 27.1667,
+                lng: 88.3500,
+                address: "Namchi, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["South Sikkim base", "Local culture", "Comfortable accommodation"]
+            },
+            {
+                name: "Jorethang Homestay 2",
+                type: "Homestay",
+                rating: 4.0,
+                lat: 27.1167,
+                lng: 88.2667,
+                address: "Jorethang, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Market town", "Local experience", "Budget-friendly stay"]
+            },
+            {
+                name: "Melli Homestay 2",
+                type: "Homestay",
+                rating: 4.2,
+                lat: 27.1000,
+                lng: 88.2500,
+                address: "Melli, South Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Border town", "Local culture", "Gateway experience"]
+            },
+            {
+                name: "Rangpo Homestay 2",
+                type: "Homestay",
+                rating: 4.1,
+                lat: 27.1833,
+                lng: 88.5333,
+                address: "Rangpo, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Gateway to Sikkim", "Local family", "Convenient location"]
+            },
+            {
+                name: "Pakyong Homestay 2",
+                type: "Homestay",
+                rating: 4.3,
+                lat: 27.2500,
+                lng: 88.5833,
+                address: "Pakyong, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Airport access", "Mountain views", "Local culture"]
+            },
+            {
+                name: "Rongli Homestay 2",
+                type: "Homestay",
+                rating: 4.2,
+                lat: 27.2000,
+                lng: 88.6667,
+                address: "Rongli, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["Border area", "Adventure base", "Local experience"]
+            },
+            {
+                name: "Dikchu Homestay 2",
+                type: "Homestay",
+                rating: 4.4,
+                lat: 27.4167,
+                lng: 88.6000,
+                address: "Dikchu, East Sikkim",
+                phone: "+91-XXXXXXXXXX",
+                reviews: ["River views", "Peaceful location", "Local hospitality"]
+            }
+        ];
+
         // Expose globally for lookups elsewhere
         window.monasteryData = monasteryData;
+        window.hospitalityData = hospitalityData;
 
-        let map, monasteryMarkers = [];
+        let map, monasteryMarkers = [], hospitalityMarkers = [];
         let currentFilter = 'all';
 
         // Initialize map
@@ -2451,6 +3962,9 @@
             // Clear existing markers
             monasteryMarkers.forEach(marker => map.removeLayer(marker));
             monasteryMarkers = [];
+            // Also clear hospitality markers if any
+            hospitalityMarkers.forEach(marker => map.removeLayer(marker));
+            hospitalityMarkers = [];
 
             monasteryData.forEach(monastery => {
                 if (currentFilter === 'all' || 
@@ -2458,8 +3972,18 @@
                     (currentFilter === 'ancient' && (2025 - monastery.founded) > 500) ||
                     currentFilter === monastery.sect) {
                     
+                    // Create custom colored icon based on region
+                    const regionColor = monastery.regionColor || '#2c3e50';
+                    const customIcon = L.divIcon({
+                        html: `<div style="background-color: ${regionColor}; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"><i class="fas fa-temple-buddhist"></i></div>`,
+                        className: 'custom-monastery-icon',
+                        iconSize: [25, 25],
+                        iconAnchor: [12, 12],
+                        popupAnchor: [0, -12]
+                    });
+                    
                     const marker = L.marker([monastery.lat, monastery.lng], {
-                        icon: getMonasteryIcon(monastery)
+                        icon: customIcon
                     });
 
                     // Create detailed popup content with historic and geographic information
@@ -2470,6 +3994,10 @@
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; opacity: 0.9;">
                                     <span style="font-size: 0.9rem;">Founded ${monastery.founded}</span>
                                     <span style="font-size: 0.9rem;">📍 ${monastery.elevation}</span>
+                                </div>
+                                <div style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.9;">
+                                    <span style="background: rgba(255,255,255,0.2); padding: 0.2rem 0.5rem; border-radius: 12px; margin-right: 0.5rem;">${monastery.region || 'Sikkim'}</span>
+                                    <span style="background: rgba(255,255,255,0.2); padding: 0.2rem 0.5rem; border-radius: 12px;">${monastery.sect.toUpperCase()}</span>
                                 </div>
                             </div>
                             
@@ -2568,6 +4096,56 @@
             });
         }
 
+        // Create custom red home icon for hospitality markers
+        const redHomeIcon = L.divIcon({
+            html: '<div style="background-color: #dc3545; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"><i class="fas fa-home"></i></div>',
+            className: 'custom-home-icon',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+            popupAnchor: [0, -15]
+        });
+
+        // Load hospitality (hotels, homestays, restaurants) on map
+        function loadHospitality() {
+            // Clear monastery markers
+            monasteryMarkers.forEach(marker => map.removeLayer(marker));
+            monasteryMarkers = [];
+            // Clear previous hospitality markers
+            hospitalityMarkers.forEach(marker => map.removeLayer(marker));
+            hospitalityMarkers = [];
+
+            hospitalityData.forEach(place => {
+                const marker = L.marker([place.lat, place.lng], { icon: redHomeIcon });
+                const mapsLink = `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
+                const stars = '★'.repeat(Math.round(place.rating)) + '☆'.repeat(5 - Math.round(place.rating));
+                const reviewsHtml = place.reviews ? place.reviews.map(review => `<div style="font-size:0.8rem; color:#666; margin:2px 0;">• ${review}</div>`).join('') : '';
+                const popupHtml = `
+                    <div style="padding:12px; max-width:320px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                            <div>
+                                <h3 style="margin:0 0 4px 0; font-size:1.05rem; color:#111;">${place.name}</h3>
+                                <div style="color:#666; font-size:0.9rem;">${place.type} • ${place.rating.toFixed(1)} ${stars}</div>
+                                <div style="color:#666; font-size:0.85rem; margin-top:4px;">${place.address}</div>
+                                <div style="color:#666; font-size:0.8rem; margin-top:4px;">${place.phone}</div>
+                            </div>
+                        </div>
+                        ${reviewsHtml ? `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #eee;">
+                            <div style="font-size:0.85rem; color:#333; font-weight:600; margin-bottom:4px;">Recent Reviews:</div>
+                            ${reviewsHtml}
+                        </div>` : ''}
+                        <div style="display:flex; gap:8px; margin-top:10px;">
+                            <a href="${mapsLink}" target="_blank" rel="noopener" class="btn btn-primary btn-small" style="padding:0.5rem 0.8rem;">
+                                <i class="fas fa-map-marker-alt"></i> Open in Google Maps
+                            </a>
+                        </div>
+                    </div>
+                `;
+                marker.bindPopup(popupHtml, { maxWidth: 380, className: 'custom-popup' });
+                marker.addTo(map);
+                hospitalityMarkers.push(marker);
+            });
+        }
+
         // Map filter functionality
         document.querySelectorAll('.map-filter').forEach(button => {
             button.addEventListener('click', function() {
@@ -2575,9 +4153,20 @@
                 document.querySelectorAll('.map-filter').forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
                 
-                // Update filter and reload monasteries
-                currentFilter = this.dataset.filter;
-                loadMonasteries();
+                // Smooth scroll to map section
+                const mapSection = document.getElementById('map');
+                if (mapSection) {
+                    mapSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+
+                // Update filter and load respective markers
+                const chosen = this.dataset.filter;
+                if (chosen === 'hospitality') {
+                    loadHospitality();
+                } else {
+                    currentFilter = chosen;
+                    loadMonasteries();
+                }
             });
         });
 
@@ -2644,6 +4233,32 @@ Opening Google Maps for detailed navigation...`;
                         behavior: 'smooth',
                         block: 'start'
                     });
+                }
+            });
+        });
+
+        // General smooth scrolling for all anchor links (including hero button)
+        document.querySelectorAll('a[href^="#"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const targetId = this.getAttribute('href');
+                if (targetId && targetId !== '#') {
+                    e.preventDefault();
+                    
+                    // Add click animation for buttons
+                    if (this.classList.contains('btn')) {
+                        this.classList.add('clicked');
+                        setTimeout(() => {
+                            this.classList.remove('clicked');
+                        }, 300);
+                    }
+                    
+                    const targetSection = document.querySelector(targetId);
+                    if (targetSection) {
+                        targetSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
                 }
             });
         });
@@ -2917,6 +4532,8 @@ Opening Google Maps for detailed navigation...`;
             const statsSection = document.querySelector('.stats');
             if (statsSection) {
                 observer.observe(statsSection);
+                // Fallback: ensure style applies even if IntersectionObserver doesn't trigger
+                window.addEventListener('load', () => statsSection.classList.add('visible'));
             }
             
             // Monastery Modal Event Listeners
@@ -3134,6 +4751,7 @@ Opening Google Maps for detailed navigation...`;
                 }
             }
 
+
             // Search overlay
             const searchToggle = document.querySelector('.search-toggle');
             const searchOverlay = document.querySelector('.search-overlay');
@@ -3164,6 +4782,107 @@ Opening Google Maps for detailed navigation...`;
                 if (megaParent && !megaParent.contains(e.target)) megaMenu && megaMenu.classList.remove('open');
             });
 
+            // ========== Archive hover carousels ==========
+            const archiveCards = document.querySelectorAll('.archive-category');
+            const modal = document.createElement('div');
+            modal.className = 'archive-modal';
+            modal.innerHTML = `
+                <div class="archive-modal-content">
+                    <button class="archive-modal-close" aria-label="Close">✕</button>
+                    <img alt="Archive preview" />
+                </div>
+            `;
+            document.body.appendChild(modal);
+            const modalImg = modal.querySelector('img');
+            const modalClose = modal.querySelector('.archive-modal-close');
+            const closeModal = () => modal.classList.remove('open');
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+            modalClose.addEventListener('click', closeModal);
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+            archiveCards.forEach(card => {
+                const carousel = card.querySelector('.archive-carousel');
+                const imagesJson = card.getAttribute('data-images') || '[]';
+                let images = [];
+                try { images = JSON.parse(imagesJson); } catch {}
+                let idx = 0;
+                let timerId = null;
+                let isActive = false;
+
+                const showImage = (index) => {
+                    if (!carousel || !isActive) return;
+                    carousel.innerHTML = '';
+                    if (!images.length) return;
+                    const img = document.createElement('img');
+                    img.src = images[index];
+                    img.alt = 'Archive item';
+                    console.log('Loading image:', images[index]);
+                    img.addEventListener('error', () => {
+                        // Fallback for missing images
+                        img.style.display = 'none';
+                        const fallback = document.createElement('div');
+                        fallback.style.cssText = `
+                            display: flex; 
+                            align-items: center; 
+                            justify-content: center; 
+                            height: 200px; 
+                            background: #f0f0f0; 
+                            color: #666; 
+                            font-size: 14px;
+                            border-radius: 12px;
+                        `;
+                        fallback.textContent = 'Image not found';
+                        carousel.appendChild(fallback);
+                    });
+                    img.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        modalImg.src = img.src;
+                        modal.classList.add('open');
+                    });
+                    carousel.appendChild(img);
+                };
+
+                const start = () => {
+                    if (!images.length) {
+                        console.log('No images found for carousel');
+                        return;
+                    }
+                    if (isActive) return; // Prevent multiple starts
+                    
+                    isActive = true;
+                    console.log('Starting carousel with images:', images);
+                    card.classList.add('show-carousel');
+                    showImage(idx);
+                    
+                    timerId = setInterval(() => {
+                        if (!isActive) {
+                            clearInterval(timerId);
+                            return;
+                        }
+                        idx = (idx + 1) % images.length;
+                        showImage(idx);
+                    }, 2000);
+                };
+
+                const stop = () => {
+                    isActive = false;
+                    card.classList.remove('show-carousel');
+                    if (timerId) { 
+                        clearInterval(timerId); 
+                        timerId = null; 
+                    }
+                    if (carousel) carousel.innerHTML = '';
+                    idx = 0; // Reset index
+                };
+
+                card.addEventListener('mouseenter', start);
+                card.addEventListener('mouseleave', stop);
+                card.addEventListener('focusin', start);
+                card.addEventListener('focusout', stop);
+            });
+
+            
+
             // Scroll progress bar
             const progress = document.querySelector('.scroll-progress');
             function updateProgress() {
@@ -3188,6 +4907,10 @@ Opening Google Maps for detailed navigation...`;
                 }
                 body.loaded .fade-in {
                     transition: opacity 0.8s ease, transform 0.8s ease;
+                }
+                body.loaded {
+                    background-color: #0f172a; /* slate-900 like dark, blends with interface */
+                    color: #e5e7eb; /* light text for contrast */
                 }
             </style>
         `);

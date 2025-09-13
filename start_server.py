@@ -78,9 +78,9 @@ def main():
         # Wait a moment then open browser
         time.sleep(2)
         try:
-            webbrowser.open('index.html')
+            webbrowser.open('http://localhost:3000/')
         except:
-            print("   Please manually open index.html in your browser")
+            print("   Please manually open http://localhost:3000/ in your browser")
     
     print("\n🛑 Press Ctrl+C to stop the server")
 
