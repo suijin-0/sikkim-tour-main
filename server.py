@@ -13,11 +13,11 @@ def chat():
         message = data.get('message', '')
         lang = data.get('lang', 'auto')
 
-        # Simple auto-detection: Hindi (Devanagari) / Sikkimese (Tibetan) / Nepali (Devanagari) / Lepcha (U+1C00–U+1C4F) / English
+        # Auto-detection only when 'auto' is selected, otherwise use the explicitly selected language
         if lang == 'auto':
             if any('\u0900' <= ch <= '\u097F' for ch in message):
                 # Could be Hindi or Nepali; prefer Nepali if common Nepali markers present
-                if any(token in message for token in ['छ', 'छन्', 'भयो', 'उहाँ', 'तपाईं']):
+                if any(token in message for token in ['छ', 'छन्', 'भयो', 'उहाँ', 'तपाईं', 'हुनुहुन्छ', 'गर्नुहोस्']):
                     lang = 'ne'  # Nepali
                 else:
                     lang = 'hi'  # Hindi
@@ -27,6 +27,7 @@ def chat():
                 lang = 'lep'  # Lepcha script
             else:
                 lang = 'en'
+        # If a specific language is selected, use that language regardless of input script
 
         # Strong system prompts per language
         if lang == 'hi':
@@ -34,31 +35,36 @@ def chat():
                 "आप एक सहायक यात्रा सहायक हैं। कृपया सभी उत्तर शुद्ध और स्वाभाविक हिन्दी (देवनागरी लिपि) में दें। "
                 "ट्रांसलिटरेशन (Hinglish) का प्रयोग न करें। संक्षिप्त, शिष्ट और स्पष्ट वाक्य लिखें (2–4 वाक्य)। "
                 "जहाँ सम्भव हो वहाँ स्थानीय शब्दों/मात्राओं का सही प्रयोग करें। बिंदुवार उत्तर देने की आवश्यकता हो तो छोटे बुलेट प्रयोग करें। "
-                "अंग्रेज़ी शब्दों से बचें; केवल आवश्यक नाम/उपाधियाँ ही मूल रूप में रखें।"
+                "अंग्रेज़ी शब्दों से बचें; केवल आवश्यक नाम/उपाधियाँ ही मूल रूप में रखें। "
+                "IMPORTANT: Always respond in Hindi regardless of the input language. Never switch to other languages."
             )
         elif lang == 'si':
             # Sikkimese (Bhutia) uses Tibetan script; keep sentences short, interactive, and polite
             system_instruction = (
                 "ཁྱེད་རང་འཇམ་སྙན་གྱི་སྐད་ཆ་བྱེད་པའི་ཤེས་རིག་འཚོལ་ཞིབ་ཡིན། ལག་ལེན་བྱ་སྟངས་དང་ལམ་སྟོན་གསལ་བོར་བརྗོད། "
                 "སྐད་ཡིག་གངས་ཡུལ་སྐད་ (སིཀིམ་སྐད་/བོད་རིགས་ Bhutia) སྤྱོད་པར་བྱ། དུས་སུ་བོད་ཡིག་རྩོམ་སྒྲིག་ལྟར་སྒྲིག་འཛུགས་བྱེད། "
-                "ལེགས་པོའི་ཚིག་གིས་བསྡུ་དགོས་(2–4 ཚིག) དང་དོན་གསལ་བ་ལ་སྐད་ཆ་སླ་བ་སྤྱད། བརྒྱུད་སྐད་ (Tibetan dialect) ལ་མཐུན་པར་བརྗོད།"
+                "ལེགས་པོའི་ཚིག་གིས་བསྡུ་དགོས་(2–4 ཚིག) དང་དོན་གསལ་བ་ལ་སྐད་ཆ་སླ་བ་སྤྱད། བརྒྱུད་སྐད་ (Tibetan dialect) ལ་མཐུན་པར་བརྗོད། "
+                "IMPORTANT: Always respond in Sikkimese (Tibetan script) regardless of input language. Never switch to other languages."
             )
         elif lang == 'ne':
             # Nepali (Devanagari) – polite, tour-focused, clear
             system_instruction = (
                 "तपाईं एक सहयोगी यात्रा सहायक हुनुहुन्छ। कृपया सबै जवाफ शुद्ध र स्पष्ट नेपाली भाषामा दिनुहोस्। "
-                "हिन्दी/अंग्रेजी ट्रान्सलिटरेशन नगर्नुहोस्। छोटो (2–4 वाक्य), शिष्ट, र इन्टरेक्टिभ बनाउनुहोस्; आवश्यक परेमा साना बुलेट प्रयोग गर्नुहोस्।"
+                "हिन्दी/अंग्रेजी ट्रान्सलिटरेशन नगर्नुहोस्। छोटो (2–4 वाक्य), शिष्ट, र इन्टरेक्टिभ बनाउनुहोस्; आवश्यक परेमा साना बुलेट प्रयोग गर्नुहोस्। "
+                "IMPORTANT: Always respond in Nepali regardless of input language. Never switch to other languages."
             )
         elif lang == 'lep':
             # Lepcha – not all models have strong support; guide clarity and fallback if script unsupported
             system_instruction = (
                 "Kū Róng (Lepcha) language: keep answers concise (2–4 sentences), clear and polite. "
-                "If Lepcha script support is limited, reply in simple English while preserving Lepcha names and terms."
+                "If Lepcha script support is limited, reply in simple English while preserving Lepcha names and terms. "
+                "IMPORTANT: Always respond in Lepcha when possible, or simple English if script unsupported. Never switch to other languages."
             )
         else:  # 'en'
             system_instruction = (
                 "You are a helpful travel assistant. Respond clearly and naturally in English. "
-                "Use concise sentences and correct grammar."
+                "Use concise sentences and correct grammar. "
+                "IMPORTANT: Always respond in English regardless of input language. Never switch to other languages."
             )
 
         # Compose request payload using 'system' for better control
